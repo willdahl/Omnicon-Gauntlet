@@ -167,12 +167,6 @@ export function ReviewWorkspace({
             summary.
           </p>
 
-          <textarea
-            value={feedback}
-            onChange={(e) => onFeedbackChange(e.target.value)}
-            className="omni-scroll mt-3 min-h-[160px] flex-1 w-full resize-none rounded-lg border border-[#2E3749] bg-[#0A0D13] p-3 text-[13px] leading-relaxed text-[#E6E9EF] outline-none focus:border-[#0F766E]"
-          />
-
           {generateError && (
             <div className="mt-3 flex items-start gap-2.5 rounded-lg border border-[#7F1D1D] bg-[#7F1D1D]/15 px-3 py-2.5">
               <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-[#F87171]" />
@@ -181,6 +175,12 @@ export function ReviewWorkspace({
               </p>
             </div>
           )}
+
+          <textarea
+            value={feedback}
+            onChange={(e) => onFeedbackChange(e.target.value)}
+            className="omni-scroll mt-3 min-h-[160px] flex-1 w-full resize-none rounded-lg border border-[#2E3749] bg-[#0A0D13] p-3 text-[13px] leading-relaxed text-[#E6E9EF] outline-none focus:border-[#0F766E]"
+          />
 
           <div className="mt-auto pt-4">
             <Button variant="primary" className="w-full" onClick={onGenerate}>

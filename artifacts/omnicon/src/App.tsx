@@ -82,13 +82,26 @@ function describeRegenError(error: unknown, modelName: string): string {
     status === 504 ||
     /bad gateway|gateway time-?out|couldn.?t reach this app/i.test(msg);
 
-  if (timedOut) {
-    return `${modelName} took longer than the request limit (~2 minutes) and the connection timed out before it finished. Try a faster model such as Gemini 3.5 Flash, or shorten the transcript.`;
-  }
+  // True when the user is already on the fastest commonly available model —
+  // avoid telling them to switch to a model they're already using.
+  const alreadyFast = /flash/i.test(modelName);
 
+  // Check structured server errors first — a 502 from the API server (e.g.
+  // "LLM response missing required delimited sections") carries a real message
+  // that is more useful than the generic timeout copy.
   if (dataErr) return dataErr;
 
+  if (timedOut) {
+    if (alreadyFast) {
+      return `${modelName} timed out before completing. The transcript may be too long for the 2-minute request limit. Try again, or shorten the transcript.`;
+    }
+    return `${modelName} took longer than the request limit (~2 minutes) and the connection timed out. Try a faster model such as Gemini 3.5 Flash, or shorten the transcript.`;
+  }
+
   if (/failed to fetch|networkerror|load failed|aborted/i.test(msg)) {
+    if (alreadyFast) {
+      return `The request didn't complete — ${modelName} may have exceeded the ~2-minute request limit. Try again, or shorten the transcript.`;
+    }
     return `The request didn't complete — this usually means ${modelName} took longer than the ~2-minute limit. Try a faster model such as Gemini 3.5 Flash.`;
   }
 
