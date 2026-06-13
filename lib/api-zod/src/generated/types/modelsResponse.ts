@@ -5,7 +5,9 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { ModelInfo } from './modelInfo';
 
-export interface HealthStatus {
-  status: string;
+export interface ModelsResponse {
+  models: ModelInfo[];
+  defaultModel: string;
 }

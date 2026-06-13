@@ -1,27 +1,22 @@
 import { Search, Check, ArrowRight } from "lucide-react";
 import { AppFrame, Panel, Badge, Button, Avatar } from "./ui";
-import { MEETINGS } from "./mockData";
-
-function initialsOf(name: string): string {
-  const cleaned = name.replace(/\([^)]*\)/g, "").trim();
-  const parts = cleaned.split(/\s+/).filter(Boolean);
-  if (parts.length === 0) return "?";
-  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
-  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-}
+import type { MeetingSummaryItem } from "./mockData";
+import { initialsOf } from "./adapters";
 
 export function ConversationPicker({
+  meetings,
   selectedId,
   onSelect,
   onContinue,
   onStepClick,
 }: {
+  meetings: MeetingSummaryItem[];
   selectedId: string;
   onSelect: (id: string) => void;
   onContinue: () => void;
   onStepClick?: (step: number) => void;
 }) {
-  const selected = MEETINGS.find((m) => m.id === selectedId);
+  const selected = meetings.find((m) => m.id === selectedId);
 
   const headerRight = (
     <>
@@ -67,19 +62,28 @@ export function ConversationPicker({
       <div className="mx-auto max-w-4xl">
         <div className="mb-3 flex items-center justify-between">
           <div className="omni-mono text-[10px] uppercase tracking-[0.18em] text-[#5E6675]">
-            {MEETINGS.length} conversations · cache-v3.json
+            {meetings.length} conversation{meetings.length === 1 ? "" : "s"} ·
+            cache-v3.json
           </div>
           <div className="omni-mono text-[10px] uppercase tracking-[0.18em] text-[#5E6675]">
-            synced 2 min ago
+            synced just now
           </div>
         </div>
 
         <Panel padded={false}>
           <div className="divide-y divide-[#1B212D]">
-            {MEETINGS.map((m) => {
+            {meetings.map((m) => {
               const isSel = m.id === selectedId;
               const shown = m.attendees.slice(0, 4);
               const extra = m.attendees.length - shown.length;
+              const meta = [
+                m.date,
+                m.platform,
+                `${m.segmentCount} segments`,
+                `${m.wordCount.toLocaleString()} words`,
+              ]
+                .filter(Boolean)
+                .join(" · ");
               return (
                 <button
                   key={m.id}
@@ -87,9 +91,7 @@ export function ConversationPicker({
                   onClick={() => onSelect(m.id)}
                   className={[
                     "group relative flex w-full gap-4 px-5 py-4 text-left transition-colors",
-                    isSel
-                      ? "bg-[#0F766E]/[0.08]"
-                      : "hover:bg-[#171C28]/60",
+                    isSel ? "bg-[#0F766E]/[0.08]" : "hover:bg-[#171C28]/60",
                   ].join(" ")}
                 >
                   <div
@@ -110,8 +112,7 @@ export function ConversationPicker({
                     </div>
 
                     <div className="omni-mono mt-1.5 text-[11px] text-[#5E6675]">
-                      {m.date} · {m.time} · {m.durationMin}m · {m.segmentCount}{" "}
-                      segments · {m.wordCount} words
+                      {meta}
                     </div>
 
                     <p className="mt-2 max-w-2xl truncate text-[13px] text-[#9AA4B5]">

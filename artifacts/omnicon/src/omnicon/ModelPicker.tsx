@@ -1,17 +1,8 @@
 import { ArrowRight, Check, Info } from "lucide-react";
-import {
-  AppFrame,
-  Badge,
-  Button,
-  SectionLabel,
-} from "./ui";
-import {
-  MODEL_GROUPS,
-  CONTEXT_ADVISORY,
-  type ModelOption,
-} from "./mockData";
+import { AppFrame, Badge, Button, SectionLabel } from "./ui";
+import type { ModelOption, ModelProviderGroup } from "./mockData";
 
-function CostPips({ cost }: { cost: ModelOption["cost"] }) {
+function CostPips({ cost }: { cost: NonNullable<ModelOption["cost"]> }) {
   const filled = cost.length;
   return (
     <div className="flex items-center gap-1" title={cost}>
@@ -59,42 +50,49 @@ function ModelCard({
             {model.name}
           </span>
         </div>
-        {model.recommended && <Badge tone="accent">Recommended</Badge>}
+        {model.recommended && <Badge tone="accent">Default</Badge>}
       </div>
 
-      <p className="text-[12px] leading-relaxed text-[#9AA4B5]">
-        {model.blurb}
-      </p>
+      {model.blurb && (
+        <p className="text-[12px] leading-relaxed text-[#9AA4B5]">
+          {model.blurb}
+        </p>
+      )}
 
       <div className="mt-auto flex items-center justify-between gap-3 pt-1">
         <div className="flex items-center gap-2.5">
-          <Badge tone="outline">{model.context} ctx</Badge>
-          <div className="flex items-center gap-1.5">
-            <CostPips cost={model.cost} />
-          </div>
+          <Badge tone="outline">{model.id}</Badge>
+          {model.context && <Badge tone="outline">{model.context} ctx</Badge>}
+          {model.cost && <CostPips cost={model.cost} />}
         </div>
-        <span className="omni-mono text-[10px] text-[#5E6675]">
-          {model.costLabel}
-        </span>
+        {model.costLabel && (
+          <span className="omni-mono text-[10px] text-[#5E6675]">
+            {model.costLabel}
+          </span>
+        )}
       </div>
     </button>
   );
 }
 
 export function ModelPicker({
+  groups,
+  advisory,
   selectedId,
   onSelect,
   onContinue,
   onStepClick,
 }: {
+  groups: ModelProviderGroup[];
+  advisory: string;
   selectedId: string;
   onSelect: (id: string) => void;
   onContinue: () => void;
   onStepClick?: (step: number) => void;
 }) {
-  const selected = MODEL_GROUPS.flatMap((g) => g.models).find(
-    (m) => m.id === selectedId,
-  );
+  const selected = groups
+    .flatMap((g) => g.models)
+    .find((m) => m.id === selectedId);
 
   return (
     <AppFrame
@@ -109,7 +107,7 @@ export function ModelPicker({
             <span className="font-medium text-[#E6E9EF]">
               {selected?.name ?? "—"}
             </span>
-            {selected?.recommended && <Badge tone="accent">Recommended</Badge>}
+            {selected?.recommended && <Badge tone="accent">Default</Badge>}
           </div>
           <Button variant="primary" onClick={onContinue}>
             Continue to review
@@ -125,12 +123,12 @@ export function ModelPicker({
             <Info className="h-3.5 w-3.5" />
           </span>
           <p className="text-[12px] leading-relaxed text-[#9AA4B5]">
-            {CONTEXT_ADVISORY}
+            {advisory}
           </p>
         </div>
 
         {/* Provider groups */}
-        {MODEL_GROUPS.map((group) => (
+        {groups.map((group) => (
           <div key={group.provider}>
             <SectionLabel>{group.provider}</SectionLabel>
             <div className="grid grid-cols-2 gap-3">

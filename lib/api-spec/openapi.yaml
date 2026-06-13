@@ -10,6 +10,8 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: regenerate
+    description: LLM regeneration engine operations
 paths:
   /healthz:
     get:
@@ -24,6 +26,70 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /regenerate/seed:
+    get:
+      operationId: getRegenerateSeed
+      tags: [regenerate]
+      summary: Get seed fixtures
+      description: >
+        Returns the canonical seed fixtures (V1 transcript, V1 summary, sample
+        review feedback) and the list of available models. Used to bootstrap a
+        regeneration run without any UI.
+      responses:
+        "200":
+          description: Seed fixtures and available models
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SeedResponse"
+  /regenerate/models:
+    get:
+      operationId: getRegenerateModels
+      tags: [regenerate]
+      summary: List available models
+      description: Returns the models the regeneration engine can call.
+      responses:
+        "200":
+          description: Available models
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ModelsResponse"
+  /regenerate:
+    post:
+      operationId: regenerate
+      tags: [regenerate]
+      summary: Regenerate transcript and summary
+      description: >
+        Given a V1 transcript, V1 summary, free-form review feedback (plus any
+        flagged segments) and a selected model, calls a real LLM to produce a
+        corrected V2 transcript, a regenerated V2 summary, a plain-English
+        explanation of the changes, side-by-side diffs, and observability.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegenerateRequest"
+      responses:
+        "200":
+          description: Regeneration result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RegenerateResult"
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "502":
+          description: LLM call failed or returned an unusable response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
 components:
   schemas:
     HealthStatus:
@@ -33,4 +99,181 @@ components:
           type: string
       required:
         - status
+    ModelInfo:
+      type: object
+      properties:
+        id:
+          type: string
+        label:
+          type: string
+        provider:
+          type: string
+      required:
+        - id
+        - label
+        - provider
+    ModelsResponse:
+      type: object
+      properties:
+        models:
+          type: array
+          items:
+            $ref: "#/components/schemas/ModelInfo"
+        defaultModel:
+          type: string
+      required:
+        - models
+        - defaultModel
+    SeedResponse:
+      type: object
+      properties:
+        meetingTitle:
+          type: string
+        date:
+          type: string
+        participants:
+          type: array
+          items:
+            type: string
+        v1Transcript:
+          type: string
+        v1Summary:
+          type: string
+        feedback:
+          type: string
+        models:
+          type: array
+          items:
+            $ref: "#/components/schemas/ModelInfo"
+        defaultModel:
+          type: string
+      required:
+        - meetingTitle
+        - date
+        - participants
+        - v1Transcript
+        - v1Summary
+        - feedback
+        - models
+        - defaultModel
+    RegenerateRequest:
+      type: object
+      properties:
+        v1Transcript:
+          type: string
+          minLength: 1
+        v1Summary:
+          type: string
+          minLength: 1
+        feedback:
+          type: string
+          minLength: 1
+        flaggedSegments:
+          type: array
+          items:
+            type: string
+        model:
+          type: string
+          minLength: 1
+      required:
+        - v1Transcript
+        - v1Summary
+        - feedback
+        - model
+    DiffSegment:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [same, add, remove]
+        value:
+          type: string
+      required:
+        - type
+        - value
+    DiffStats:
+      type: object
+      properties:
+        added:
+          type: integer
+        removed:
+          type: integer
+        unchanged:
+          type: integer
+      required:
+        - added
+        - removed
+        - unchanged
+    Observability:
+      type: object
+      properties:
+        model:
+          type: string
+        inputTokens:
+          type: integer
+        outputTokens:
+          type: integer
+        totalTokens:
+          type: integer
+        latencyMs:
+          type: integer
+        estimatedCostUsd:
+          type: number
+          nullable: true
+        finishReason:
+          type: string
+        reasoning:
+          type: string
+          nullable: true
+      required:
+        - model
+        - inputTokens
+        - outputTokens
+        - totalTokens
+        - latencyMs
+        - estimatedCostUsd
+        - finishReason
+        - reasoning
+    RegenerateResult:
+      type: object
+      properties:
+        v2Transcript:
+          type: string
+        v2Summary:
+          type: string
+        changeExplanation:
+          type: string
+        transcriptDiff:
+          type: array
+          items:
+            $ref: "#/components/schemas/DiffSegment"
+        summaryDiff:
+          type: array
+          items:
+            $ref: "#/components/schemas/DiffSegment"
+        transcriptDiffStats:
+          $ref: "#/components/schemas/DiffStats"
+        summaryDiffStats:
+          $ref: "#/components/schemas/DiffStats"
+        observability:
+          $ref: "#/components/schemas/Observability"
+      required:
+        - v2Transcript
+        - v2Summary
+        - changeExplanation
+        - transcriptDiff
+        - summaryDiff
+        - transcriptDiffStats
+        - summaryDiffStats
+        - observability
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+        retryable:
+          type: boolean
+      required:
+        - error
+        - retryable
 

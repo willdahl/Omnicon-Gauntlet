@@ -1,1 +1,3 @@
 - [Subagent screenshot limitation](subagent-screenshot-limitation.md) — subagents can't screenshot or run tests; the parent must visually verify canvas/mockup renders.
+- [OMNICON regen wiring](omnicon-regen-wiring.md) — engine owns seed/diff/observability; omnicon holds no static content, only adapts shapes in adapters.ts.
+- [LLM long verbatim text output format](llm-long-text-output-format.md) — for long multi-line LLM output use sentinel delimiters, not JSON; models emit invalid JSON (literal newlines) in long strings.

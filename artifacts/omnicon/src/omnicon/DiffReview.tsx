@@ -1,13 +1,7 @@
 import { useState } from "react";
 import { FileText, MessageSquare, Eye, X, Check } from "lucide-react";
 import { AppFrame, Panel, Badge, Button, SectionLabel } from "./ui";
-import {
-  SUMMARY_DIFF_PAIRS,
-  TRANSCRIPT_DIFF_PAIRS,
-  DIFF_TARGET_STATS,
-  DIFF_CHANGE_SUMMARY,
-} from "./mockData";
-import type { DiffPair, DiffCell } from "./mockData";
+import type { DiffPair, DiffCell, DiffTargetStats } from "./mockData";
 
 const CELL_STYLE: Record<DiffCell["op"], string> = {
   same: "text-[#9AA4B5]",
@@ -65,39 +59,55 @@ function DiffTable({ pairs }: { pairs: DiffPair[] }) {
         </div>
       </div>
 
-      {pairs.map((pair, i) =>
-        pair.heading ? (
-          <div
-            key={i}
-            className="border-b border-[#1B212D] bg-[#12161F] px-3 py-2"
-          >
-            <span className="omni-mono text-[10px] uppercase tracking-[0.18em] text-[#7C8699]">
-              {pair.heading}
-            </span>
-          </div>
-        ) : (
-          <div
-            key={i}
-            className="grid grid-cols-2 border-b border-[#1B212D] last:border-b-0"
-          >
-            <div className="border-r border-[#232A38]">
-              <DiffCellView cell={pair.left} />
+      {pairs.length === 0 ? (
+        <div className="px-3 py-6 text-center text-[12px] text-[#5E6675]">
+          No changes — V2 is identical to V1.
+        </div>
+      ) : (
+        pairs.map((pair, i) =>
+          pair.heading ? (
+            <div
+              key={i}
+              className="border-b border-[#1B212D] bg-[#12161F] px-3 py-2"
+            >
+              <span className="omni-mono text-[10px] uppercase tracking-[0.18em] text-[#7C8699]">
+                {pair.heading}
+              </span>
             </div>
-            <div>
-              <DiffCellView cell={pair.right} />
+          ) : (
+            <div
+              key={i}
+              className="grid grid-cols-2 border-b border-[#1B212D] last:border-b-0"
+            >
+              <div className="border-r border-[#232A38]">
+                <DiffCellView cell={pair.left} />
+              </div>
+              <div>
+                <DiffCellView cell={pair.right} />
+              </div>
             </div>
-          </div>
-        ),
+          ),
+        )
       )}
     </div>
   );
 }
 
 export function DiffReview({
+  summaryPairs,
+  transcriptPairs,
+  summaryStats,
+  transcriptStats,
+  changes,
   onApprove,
   onReject,
   onStepClick,
 }: {
+  summaryPairs: DiffPair[];
+  transcriptPairs: DiffPair[];
+  summaryStats: DiffTargetStats;
+  transcriptStats: DiffTargetStats;
+  changes: string[];
   onApprove: () => void;
   onReject: () => void;
   onStepClick?: (step: number) => void;
@@ -105,10 +115,8 @@ export function DiffReview({
   const [target, setTarget] = useState<"summary" | "transcript">("summary");
   const [mode, setMode] = useState<"diff" | "v1">("diff");
 
-  const pairs =
-    target === "summary" ? SUMMARY_DIFF_PAIRS : TRANSCRIPT_DIFF_PAIRS;
-  const stats = DIFF_TARGET_STATS[target];
-  const changes = DIFF_CHANGE_SUMMARY[target];
+  const pairs = target === "summary" ? summaryPairs : transcriptPairs;
+  const stats = target === "summary" ? summaryStats : transcriptStats;
 
   return (
     <AppFrame
@@ -140,7 +148,7 @@ export function DiffReview({
       footer={
         <>
           <p className="text-[12px] text-[#5E6675]">
-            Approving writes V2 back to the Granola note.
+            Approving accepts V2 as the corrected output.
           </p>
           <div className="flex items-center gap-2">
             <Button variant="danger" onClick={onReject}>
@@ -186,7 +194,7 @@ export function DiffReview({
           </div>
           <span className="omni-mono text-[11px] text-[#5E6675]">
             {target === "summary"
-              ? "structured note · section by section"
+              ? "structured note · line by line"
               : "diarized transcript · corrected attributions"}
           </span>
         </div>
@@ -195,8 +203,8 @@ export function DiffReview({
           <div className="flex flex-col gap-4">
             {/* Change summary — what changed, in plain language */}
             <Panel
-              title={`What changed in the ${target}`}
-              subtitle="Summary of the corrections in this revision"
+              title="What changed"
+              subtitle="Plain-English explanation from the model"
               right={
                 <Badge tone="outline">
                   <span className="omni-mono text-[10px]">

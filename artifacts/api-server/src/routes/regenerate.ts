@@ -1,0 +1,100 @@
+import { Router, type IRouter } from "express";
+import { RegenerateBody, RegenerateResponse } from "@workspace/api-zod";
+import { seedFixture } from "../seed";
+import {
+  AVAILABLE_MODELS,
+  DEFAULT_MODEL,
+  isKnownModel,
+} from "../lib/models";
+import { computeLineDiff, diffStats } from "../lib/diff";
+import { regenerate, RegenerationError } from "../lib/regenerate";
+import { logger } from "../lib/logger";
+
+const router: IRouter = Router();
+
+router.get("/regenerate/seed", (_req, res) => {
+  res.json({
+    meetingTitle: seedFixture.meetingTitle,
+    date: seedFixture.date,
+    participants: seedFixture.participants,
+    v1Transcript: seedFixture.v1Transcript,
+    v1Summary: seedFixture.v1Summary,
+    feedback: seedFixture.feedback,
+    models: AVAILABLE_MODELS,
+    defaultModel: DEFAULT_MODEL,
+  });
+});
+
+router.get("/regenerate/models", (_req, res) => {
+  res.json({ models: AVAILABLE_MODELS, defaultModel: DEFAULT_MODEL });
+});
+
+router.post("/regenerate", async (req, res) => {
+  const parsed = RegenerateBody.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({
+      error: `Invalid request: ${parsed.error.issues
+        .map((i) => `${i.path.join(".")} ${i.message}`)
+        .join("; ")}`,
+      retryable: false,
+    });
+    return;
+  }
+
+  const body = parsed.data;
+
+  if (!isKnownModel(body.model)) {
+    res.status(400).json({
+      error: `Unknown model "${body.model}". Available: ${AVAILABLE_MODELS.map(
+        (m) => m.id,
+      ).join(", ")}`,
+      retryable: false,
+    });
+    return;
+  }
+
+  try {
+    const result = await regenerate({
+      v1Transcript: body.v1Transcript,
+      v1Summary: body.v1Summary,
+      feedback: body.feedback,
+      flaggedSegments: body.flaggedSegments,
+      model: body.model,
+    });
+
+    const transcriptDiff = computeLineDiff(
+      body.v1Transcript,
+      result.v2Transcript,
+    );
+    const summaryDiff = computeLineDiff(body.v1Summary, result.v2Summary);
+
+    const payload = {
+      v2Transcript: result.v2Transcript,
+      v2Summary: result.v2Summary,
+      changeExplanation: result.changeExplanation,
+      transcriptDiff,
+      summaryDiff,
+      transcriptDiffStats: diffStats(transcriptDiff),
+      summaryDiffStats: diffStats(summaryDiff),
+      observability: result.observability,
+    };
+
+    // Validate the response shape before returning.
+    const validated = RegenerateResponse.parse(payload);
+    res.json(validated);
+  } catch (err) {
+    if (err instanceof RegenerationError) {
+      logger.error({ err: err.message }, "Regeneration failed");
+      res.status(502).json({ error: err.message, retryable: err.retryable });
+      return;
+    }
+    const message = err instanceof Error ? err.message : String(err);
+    logger.error({ err: message }, "Unexpected regeneration error");
+    res.status(502).json({
+      error: `Unexpected error: ${message}`,
+      retryable: true,
+    });
+  }
+});
+
+export default router;
