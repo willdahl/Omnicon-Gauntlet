@@ -7,6 +7,7 @@ export interface RegenerateInput {
   feedback: string;
   flaggedSegments?: string[];
   model: string;
+  temperature?: number;
 }
 
 export interface Observability {
@@ -108,6 +109,11 @@ export async function regenerate(
   const prompt = buildPrompt(input);
   const start = Date.now();
 
+  // temperature=0 is used for deterministic test runs; undefined means the
+  // provider default is used for production calls.
+  const temperatureParam =
+    input.temperature !== undefined ? { temperature: input.temperature } : {};
+
   let completion;
   try {
     completion = await openrouter.chat.completions.create(
@@ -115,6 +121,7 @@ export async function regenerate(
         model: input.model,
         max_tokens: 32768,
         messages: [{ role: "user", content: prompt }],
+        ...temperatureParam,
         // OpenRouter-specific: request reasoning traces when the provider
         // exposes them. Cast because this is not in the base OpenAI types.
         ...({ reasoning: { enabled: true } } as Record<string, unknown>),
@@ -169,7 +176,7 @@ export async function regenerate(
   );
 
   // Reasoning text is exposed by OpenRouter on the message as `reasoning`
-  // (not part of the base OpenAI types) for providers that surface it.
+  // (not part of the base OpenAI types) for providers that surface them.
   const messageWithReasoning = choice.message as { reasoning?: unknown };
   const reasoning =
     typeof messageWithReasoning.reasoning === "string" &&

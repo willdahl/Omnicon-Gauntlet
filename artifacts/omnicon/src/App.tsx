@@ -6,6 +6,7 @@ import {
   type RegenerateResult,
 } from "@workspace/api-client-react";
 import { SourcePicker } from "./omnicon/SourcePicker";
+import { GuardrailPanel } from "./omnicon/GuardrailPanel";
 import { ConversationPicker } from "./omnicon/ConversationPicker";
 import { ModelPicker } from "./omnicon/ModelPicker";
 import { ReviewWorkspace } from "./omnicon/ReviewWorkspace";
@@ -108,6 +109,10 @@ function describeRegenError(error: unknown, modelName: string): string {
   return msg || "Generation failed. Please try again.";
 }
 
+// Explicit opt-in: set VITE_DEMO_MODE=true in the environment to enable the
+// guardrail test suite CTA. Off by default so it does not appear in production.
+const DEMO_MODE = import.meta.env.VITE_DEMO_MODE === "true";
+
 function App() {
   const seedQuery = useGetRegenerateSeed();
   const regen = useRegenerate();
@@ -117,6 +122,7 @@ function App() {
   const [modelId, setModelId] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<string | null>(null);
   const [result, setResult] = useState<RegenerateResult | null>(null);
+  const [showGuardrailPanel, setShowGuardrailPanel] = useState(false);
 
   // Seed defaults (model + feedback) once the fixture loads.
   useEffect(() => {
@@ -229,10 +235,16 @@ function App() {
   switch (stage) {
     case 1:
       return (
-        <SourcePicker
-          onContinue={() => setStage(2)}
-          onStepClick={onStepClick}
-        />
+        <>
+          <SourcePicker
+            onContinue={() => setStage(2)}
+            onStepClick={onStepClick}
+            onRunTests={DEMO_MODE ? () => setShowGuardrailPanel(true) : undefined}
+          />
+          {showGuardrailPanel && (
+            <GuardrailPanel onClose={() => setShowGuardrailPanel(false)} />
+          )}
+        </>
       );
     case 2:
       return (

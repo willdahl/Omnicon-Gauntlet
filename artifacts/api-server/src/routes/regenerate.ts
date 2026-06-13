@@ -7,7 +7,8 @@ import {
   isKnownModel,
 } from "../lib/models";
 import { computeLineDiff, diffStats } from "../lib/diff";
-import { regenerate, RegenerationError } from "../lib/regenerate";
+import { RegenerationError } from "../lib/regenerate";
+import { runPipeline, defaultPipelineConfig } from "../lib/guardrails/pipeline";
 import { logger } from "../lib/logger";
 
 const router: IRouter = Router();
@@ -54,13 +55,26 @@ router.post("/regenerate", async (req, res) => {
   }
 
   try {
-    const result = await regenerate({
-      v1Transcript: body.v1Transcript,
-      v1Summary: body.v1Summary,
-      feedback: body.feedback,
-      flaggedSegments: body.flaggedSegments,
-      model: body.model,
-    });
+    const pipelineResult = await runPipeline(
+      {
+        v1Transcript: body.v1Transcript,
+        v1Summary: body.v1Summary,
+        feedback: body.feedback,
+        flaggedSegments: body.flaggedSegments,
+        model: body.model,
+      },
+      defaultPipelineConfig,
+    );
+
+    if (pipelineResult.blocked || pipelineResult.output === null) {
+      res.status(422).json({
+        error: pipelineResult.blockReason ?? "Request blocked by guardrail pipeline.",
+        retryable: false,
+      });
+      return;
+    }
+
+    const result = pipelineResult.output;
 
     const transcriptDiff = computeLineDiff(
       body.v1Transcript,
@@ -79,7 +93,6 @@ router.post("/regenerate", async (req, res) => {
       observability: result.observability,
     };
 
-    // Validate the response shape before returning.
     const validated = RegenerateResponse.parse(payload);
     res.json(validated);
   } catch (err) {

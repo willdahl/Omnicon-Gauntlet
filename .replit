@@ -34,3 +34,9 @@ externalPort = 3001
 [[ports]]
 localPort = 21193
 externalPort = 3000
+
+[userenv]
+
+[userenv.development]
+DEMO_MODE = "true"
+VITE_DEMO_MODE = "true"

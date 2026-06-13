@@ -15,6 +15,7 @@ import {
   ArrowRight,
   RefreshCw,
   FolderSearch,
+  FlaskConical,
   type LucideIcon,
 } from "lucide-react";
 
@@ -132,9 +133,11 @@ function SourceCard({ source }: { source: SourceOption }) {
 export function SourcePicker({
   onContinue,
   onStepClick,
+  onRunTests,
 }: {
   onContinue: () => void;
   onStepClick?: (step: number) => void;
+  onRunTests?: () => void;
 }) {
   return (
     <AppFrame
@@ -161,10 +164,22 @@ export function SourcePicker({
               </span>
             </span>
           </div>
-          <Button variant="primary" onClick={onContinue}>
-            Continue to conversations
-            <ArrowRight className="h-4 w-4" />
-          </Button>
+          <div className="flex items-center gap-2">
+            {onRunTests && (
+              <button
+                onClick={onRunTests}
+                className="flex items-center gap-1.5 rounded-lg border border-[#2E3749] bg-[#12161F] px-3 py-2 omni-mono text-[11px] uppercase tracking-[0.14em] text-[#5E6675] transition-colors hover:border-[#3D4A5E] hover:text-[#9AA4B5]"
+                title="Run guardrail test suite (demo mode)"
+              >
+                <FlaskConical className="h-3.5 w-3.5" />
+                Run Test Suite
+              </button>
+            )}
+            <Button variant="primary" onClick={onContinue}>
+              Continue to conversations
+              <ArrowRight className="h-4 w-4" />
+            </Button>
+          </div>
         </>
       }
     >
