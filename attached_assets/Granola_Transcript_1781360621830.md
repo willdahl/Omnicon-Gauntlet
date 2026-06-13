@@ -1,0 +1,63 @@
+Meeting Title: Gauntlet Project
+Date: Jun 12
+Meeting participants: William Dahl
+
+Transcript:
+ 
+Speaker A: Going to say gauntlet project. All right, and we're live. So goal here is to create a clone quote harness or the Gauntlet hackathon here. 
+Speaker B: Yes. 
+Speaker A: And we got some different pillars which we're not going to discuss right now. But really in my mind, it's not necessarily a harness, it's just like an 
+Speaker B: application 
+Speaker A: from my perspective. So some of the soundboards lay out problem statement when I'm thinking, when I soundboard the problem statement, what I'm thinking. And so for me, when I used Granola earlier today, I was giving a personal narrative of my background. And so I want to be able to take from that and sort of take the outline and use that to build some visualizations. But it got some things right and some things wrong. And this happens with any summary. Also, if I'm going to extend Granola, I'm going to have some things that are personal, but then if I am working in a professional setting or like ideation or different projects, I don't see a good way that could have different profiles or tagging right now. And so I'm thinking there's a V1, V2, maybe even a V3 version of this application or harness. And so what I'd like to do is set something up that in a lovable. Sorry, it's a replit project where basically I can select an MCP that for a transcript and. Or summary that can be coming from granola or teams or wherever you've got that data flowing in from. So that's data transcript and summary ingestion. And then the V1 is just an ability to review the summary that was there. Does it match what you were looking for? Clarify what you were looking for? Did the summary match? So what matched and what didn't match? And then document that for the things that didn't match, what doesn't. Following up on what doesn't need to be and then. Making those changes both in making documenting those changes in like a V2 of the summary and a V2 of the transcript. And so that way I've got sort of updated context that actually matches what I was going for. And so also in this application there would be a sort of GUI for the model selector, so I can pick any model that I want or have access to. And then an observability pane where I can see the thought process behind everything that I'm doing for those refinements there and the cost that I took for that and the time. And so, yeah, that's. That's about it. 
+Speaker B: Yeah, I mean I think that fits the bill for a harness 
+Speaker A: for the V0 V1 and then. And then V2. Oh, go ahead. You're going to share something else. 
+Speaker B: No, go ahead. 
+Speaker A: V2 is okay. Now I'm starting to add tags to that so that then those tags can help me to understand tags and or profiles. So profiles could be like what am I doing in the work or personal setting versus tags might be like what are the key topics or functions like? Even the work setting I might have a daily standup versus a discovery call versus X, Y or Z. And so maybe I want to then after doing that. So that's just enrichment of data. Then that allows for V3. V3 which could branch into. Okay, I want to then apply templates or guardrail specific instructions to specific types of conversations and or ways to summarize or look across mine. When I'm going back to things like, hey, for all my discovery calls, not only are they templated, but then if I'm asking certain questions and the functions that come from that I can get or think of like in a medical setting you could have. All right, I've got my initial consultation or your annual physical or something like that versus just a follow up call for something specific. Like you might be asking different questions, different ones or want different summaries or dashboards. Thanks for that. Which are more turnkey. But the idea can be sort of templated. 
+Speaker B: Yeah. Wow. Kind of like thinking like Obsidian where you have like the graph network. 
+Speaker A: Sure. 
+Speaker B: And with the tags it's easy to like click in a tag and see all the nodes associated with that tag. 
+Speaker A: Yeah. And so on and so forth and. And so. But is there something. Am I missing? Is there something that does that out of the box today? Like takes conversation. Ingest conversations from all of. I can have. I can come in. I can come in with a list of my mcps. 
+Speaker B: There's a tool for anything you can think of nowadays there. 
+Speaker A: Well, yeah. So I should discover what that is. 
+Speaker B: But you can but build versus buy. 
+Speaker A: Yeah. So yeah, I just want to be able to. And I. I could have then turn that into a loop or service and loops across all the mcps I have connected and then queues these up to either transform them, which is like the V2 or V3, or allow for the human in the loop, which is the V1, which is I wanted to start with to make sure. 
+Speaker B: Yeah. So I think ETL is the term that is not used anymore. 
+Speaker A: No. Yeah. 
+Speaker B: Right. 
+Speaker A: Yeah. 
+Speaker B: In data engineering realm, like when's the last time you Heard ETL 
+Speaker A: two jobs ago. 
+Speaker B: Right. But I think that's transformed. So ETL is now harnessed. 
+Speaker A: Okay. Got it. 
+Speaker B: Right. Like etl. How many steps needed? 
+Speaker A: Yeah. 
+Speaker B: It's. It has the whole framework, it has the loop, it has the boundaries, it has all that. I mean, that's what I'm doing. My horn is this is a big ass ETL tool. But now it's agentic. So the issue of ETL was like it needed to be deterministic. You needed all those rules. But now you can just plug and play an agent for that. Right. Yeah. You don't need to know the rules. Input, output, agent, figure it out. 
+Speaker A: And there's some other things you could do with that. You could, if you could separate out the transcript from the summary so you can get the same to then start to do comparisons across the summary tools. 
+Speaker B: Another thing about that is like you have your raw data. 
+Speaker A: Yeah. 
+Speaker B: Silver data augmented and golden data. The golden data is like what your desired output is. 
+Speaker A: Sure. 
+Speaker B: And that's the gap between raw and golden. 
+Speaker A: Sure. 
+Speaker B: And then with retraining. 
+Speaker A: So you can set up. Yeah. You set up evals and so you can run against that. So. 
+Speaker B: Yeah. 
+Speaker A: Cool. 
+Speaker B: Yeah. 
+Speaker A: Thank you. 
+Speaker B: Yeah. ETL was. The, the word that got lost. 
+Speaker A: Yeah. Do you use or would you use something like that for meetings and conversations or do you just use like something that's roll out of the box or 
+Speaker B: you don't and you get more automated on that. You shouldn't remember now. I'm just old school right now. 
+Speaker A: Okay. Well, I'm just trying to remember. Yeah. And I've been, I've been, I've been working really useful. 
+Speaker B: Like where after the meeting. Right. You, you have those raw notes. But then you need to take action on it. Whether you need to create tickets. Yeah. On the product. On the product side. Or it's something that you need to do internally. There's just like so many things you can do with that. Raw data that needs post processing. 
+Speaker A: Yeah. 
+Speaker B: Right. Because after granola is just sitting there not doing much. 
+Speaker A: Yeah. And I think it makes sense for that to live eventually outside of the platform that's capturing the information. Because I think that granola doesn't. Not that it doesn't, it doesn't have the ability to modify the summaries or how it summarizes or how it tags and like what you would want to do with it beyond that. So really to me the biggest thing is having actually like a. Who's got the best transcription is what I think is. And then who's got what model plus sort of harness combination gives the best summaries either out of the box thing or. Or because you could. You could have. I think you'd have like an open source marketplace for that sort of thing. I don't know why that probably exists. Maybe it doesn't. So maybe that's a do some research. Yeah. 
+Speaker B: I'm sure a lot of other people are having the same issue. 
+Speaker A: Yeah exactly. 
+Speaker B: But everybody's using a note taker tool like yeah. They're to do something with it. But I think for your use case is like given all this raw data, raw transcripts how does it get into your knowledge base? Whether it's your internal knowledge base or your company knowledge base. And there's a lot of steps to get there. 
+Speaker A: Sure. 
+Speaker B: Raw data to knowledge base. Right. Yeah. Tagging. You can now associate data and link the nodes in a certain way. 
+Speaker A: Cool. 
+Speaker B: Then extracting actions that needs to happen. 
+Speaker A: I think actions are things that are good. I just want to make the MVP where the notes of summary have the ability to review that with human loop first. And then my thought is if you build maybe you keep statistics over time on like which summaries and which transcripts. You know how much you had to change about it as a way of benchmarking over time. And then you could see that and or providing those conversation specific sort of templates or guidelines. I think that will let you triangulate more to help you have higher fidelity automation down the line for whatever you're willing to pay for the token usage that that helps or not. So yeah. Thank you. Yeah thank you for soundboarding 12 minutes. So. So I if I could. 
