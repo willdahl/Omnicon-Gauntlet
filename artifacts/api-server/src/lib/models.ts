@@ -10,6 +10,11 @@ export interface ModelInfo {
 
 export const AVAILABLE_MODELS: ModelInfo[] = [
   {
+    id: "google/gemini-3.5-flash",
+    label: "Gemini 3.5 Flash",
+    provider: "Google",
+  },
+  {
     id: "anthropic/claude-sonnet-4.6",
     label: "Claude Sonnet 4.6",
     provider: "Anthropic",
@@ -21,11 +26,6 @@ export const AVAILABLE_MODELS: ModelInfo[] = [
   },
   { id: "openai/gpt-5.5", label: "GPT-5.5", provider: "OpenAI" },
   { id: "openai/gpt-5.4-mini", label: "GPT-5.4 Mini", provider: "OpenAI" },
-  {
-    id: "google/gemini-3.5-flash",
-    label: "Gemini 3.5 Flash",
-    provider: "Google",
-  },
 ];
 
 export const DEFAULT_MODEL = "google/gemini-3.5-flash";
