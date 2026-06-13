@@ -83,12 +83,38 @@ export const RegenerateResponse = zod.object({
   "type": zod.enum(['same', 'add', 'remove']),
   "value": zod.string()
 })),
+  "transcriptWordDiff": zod.array(zod.object({
+  "type": zod.enum(['same', 'add', 'remove', 'modified']),
+  "value": zod.string(),
+  "tokens": zod.array(zod.object({
+  "type": zod.enum(['same', 'add', 'remove']),
+  "value": zod.string()
+})).optional()
+}).describe('A word-level diff segment. `same`\/`add`\/`remove` describe whole lines with no intra-line detail; `modified` pairs a changed V1 line with its V2 counterpart and carries `tokens` marking which words changed.\n')),
+  "summaryWordDiff": zod.array(zod.object({
+  "type": zod.enum(['same', 'add', 'remove', 'modified']),
+  "value": zod.string(),
+  "tokens": zod.array(zod.object({
+  "type": zod.enum(['same', 'add', 'remove']),
+  "value": zod.string()
+})).optional()
+}).describe('A word-level diff segment. `same`\/`add`\/`remove` describe whole lines with no intra-line detail; `modified` pairs a changed V1 line with its V2 counterpart and carries `tokens` marking which words changed.\n')),
   "transcriptDiffStats": zod.object({
   "added": zod.number(),
   "removed": zod.number(),
   "unchanged": zod.number()
 }),
   "summaryDiffStats": zod.object({
+  "added": zod.number(),
+  "removed": zod.number(),
+  "unchanged": zod.number()
+}),
+  "transcriptWordDiffStats": zod.object({
+  "added": zod.number(),
+  "removed": zod.number(),
+  "unchanged": zod.number()
+}),
+  "summaryWordDiffStats": zod.object({
   "added": zod.number(),
   "removed": zod.number(),
   "unchanged": zod.number()

@@ -8,6 +8,7 @@
 import type { DiffSegment } from './diffSegment';
 import type { DiffStats } from './diffStats';
 import type { Observability } from './observability';
+import type { WordDiffSegment } from './wordDiffSegment';
 
 export interface RegenerateResult {
   v2Transcript: string;
@@ -15,7 +16,11 @@ export interface RegenerateResult {
   changeExplanation: string;
   transcriptDiff: DiffSegment[];
   summaryDiff: DiffSegment[];
+  transcriptWordDiff: WordDiffSegment[];
+  summaryWordDiff: WordDiffSegment[];
   transcriptDiffStats: DiffStats;
   summaryDiffStats: DiffStats;
+  transcriptWordDiffStats: DiffStats;
+  summaryWordDiffStats: DiffStats;
   observability: Observability;
 }

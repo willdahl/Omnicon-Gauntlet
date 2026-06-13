@@ -5,6 +5,7 @@
 
 import type {
   DiffSegment,
+  WordDiffSegment,
   Observability,
   ModelInfo,
   SeedResponse,
@@ -13,6 +14,7 @@ import type {
   SummarySection,
   TranscriptSegment,
   DiffPair,
+  DiffTokenSpan,
   DiffTargetStats,
   ModelOption,
   ModelProviderGroup,
@@ -140,6 +142,69 @@ export function flatDiffToPairs(segments: DiffSegment[]): DiffPair[] {
       removeBuf.push(value);
     } else {
       addBuf.push(value);
+    }
+  }
+
+  flush();
+  return pairs;
+}
+
+// Convert the engine's word-level diff into side-by-side pairs. `same`/`add`/
+// `remove` segments behave like the line diff (whole-line rows, zipped per
+// column), while a `modified` segment becomes a single row whose left/right
+// cells carry token spans so only the changed words are highlighted.
+export function wordDiffToPairs(segments: WordDiffSegment[]): DiffPair[] {
+  const pairs: DiffPair[] = [];
+  let removeBuf: string[] = [];
+  let addBuf: string[] = [];
+
+  const flush = () => {
+    const max = Math.max(removeBuf.length, addBuf.length);
+    for (let i = 0; i < max; i++) {
+      pairs.push({
+        left: i < removeBuf.length ? { op: "remove", text: removeBuf[i] } : null,
+        right: i < addBuf.length ? { op: "add", text: addBuf[i] } : null,
+      });
+    }
+    removeBuf = [];
+    addBuf = [];
+  };
+
+  for (const seg of segments) {
+    if (seg.type === "same") {
+      if (!seg.value.trim()) continue; // skip blank lines
+      flush();
+      pairs.push({
+        left: { op: "same", text: seg.value },
+        right: { op: "same", text: seg.value },
+      });
+    } else if (seg.type === "modified") {
+      flush();
+      const tokens = seg.tokens ?? [];
+      const leftTokens: DiffTokenSpan[] = tokens
+        .filter((t) => t.type !== "add")
+        .map((t) => ({ op: t.type, text: t.value }));
+      const rightTokens: DiffTokenSpan[] = tokens
+        .filter((t) => t.type !== "remove")
+        .map((t) => ({ op: t.type, text: t.value }));
+      pairs.push({
+        left: {
+          op: "modified",
+          text: leftTokens.map((t) => t.text).join(""),
+          tokens: leftTokens,
+        },
+        right: {
+          op: "modified",
+          text: rightTokens.map((t) => t.text).join(""),
+          tokens: rightTokens,
+        },
+      });
+    } else if (seg.type === "remove") {
+      if (!seg.value.trim()) continue; // skip blank lines
+      removeBuf.push(seg.value);
+    } else {
+      if (!seg.value.trim()) continue; // skip blank lines
+      addBuf.push(seg.value);
     }
   }
 

@@ -57,6 +57,40 @@ export interface DiffSegment {
   value: string;
 }
 
+export type DiffTokenType = typeof DiffTokenType[keyof typeof DiffTokenType];
+
+
+export const DiffTokenType = {
+  same: 'same',
+  add: 'add',
+  remove: 'remove',
+} as const;
+
+export interface DiffToken {
+  type: DiffTokenType;
+  value: string;
+}
+
+export type WordDiffSegmentType = typeof WordDiffSegmentType[keyof typeof WordDiffSegmentType];
+
+
+export const WordDiffSegmentType = {
+  same: 'same',
+  add: 'add',
+  remove: 'remove',
+  modified: 'modified',
+} as const;
+
+/**
+ * A word-level diff segment. `same`/`add`/`remove` describe whole lines with no intra-line detail; `modified` pairs a changed V1 line with its V2 counterpart and carries `tokens` marking which words changed.
+
+ */
+export interface WordDiffSegment {
+  type: WordDiffSegmentType;
+  value: string;
+  tokens?: DiffToken[];
+}
+
 export interface DiffStats {
   added: number;
   removed: number;
@@ -80,8 +114,12 @@ export interface RegenerateResult {
   changeExplanation: string;
   transcriptDiff: DiffSegment[];
   summaryDiff: DiffSegment[];
+  transcriptWordDiff: WordDiffSegment[];
+  summaryWordDiff: WordDiffSegment[];
   transcriptDiffStats: DiffStats;
   summaryDiffStats: DiffStats;
+  transcriptWordDiffStats: DiffStats;
+  summaryWordDiffStats: DiffStats;
   observability: Observability;
 }
 

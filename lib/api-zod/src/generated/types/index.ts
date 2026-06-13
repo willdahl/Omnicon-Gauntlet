@@ -9,6 +9,8 @@
 export * from './diffSegment';
 export * from './diffSegmentType';
 export * from './diffStats';
+export * from './diffToken';
+export * from './diffTokenType';
 export * from './errorResponse';
 export * from './healthStatus';
 export * from './modelInfo';
@@ -17,3 +19,5 @@ export * from './observability';
 export * from './regenerateRequest';
 export * from './regenerateResult';
 export * from './seedResponse';
+export * from './wordDiffSegment';
+export * from './wordDiffSegmentType';

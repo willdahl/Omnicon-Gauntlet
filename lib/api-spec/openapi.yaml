@@ -191,6 +191,36 @@ components:
       required:
         - type
         - value
+    DiffToken:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [same, add, remove]
+        value:
+          type: string
+      required:
+        - type
+        - value
+    WordDiffSegment:
+      type: object
+      description: >
+        A word-level diff segment. `same`/`add`/`remove` describe whole lines
+        with no intra-line detail; `modified` pairs a changed V1 line with its
+        V2 counterpart and carries `tokens` marking which words changed.
+      properties:
+        type:
+          type: string
+          enum: [same, add, remove, modified]
+        value:
+          type: string
+        tokens:
+          type: array
+          items:
+            $ref: "#/components/schemas/DiffToken"
+      required:
+        - type
+        - value
     DiffStats:
       type: object
       properties:
@@ -251,9 +281,21 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/DiffSegment"
+        transcriptWordDiff:
+          type: array
+          items:
+            $ref: "#/components/schemas/WordDiffSegment"
+        summaryWordDiff:
+          type: array
+          items:
+            $ref: "#/components/schemas/WordDiffSegment"
         transcriptDiffStats:
           $ref: "#/components/schemas/DiffStats"
         summaryDiffStats:
+          $ref: "#/components/schemas/DiffStats"
+        transcriptWordDiffStats:
+          $ref: "#/components/schemas/DiffStats"
+        summaryWordDiffStats:
           $ref: "#/components/schemas/DiffStats"
         observability:
           $ref: "#/components/schemas/Observability"
@@ -263,8 +305,12 @@ components:
         - changeExplanation
         - transcriptDiff
         - summaryDiff
+        - transcriptWordDiff
+        - summaryWordDiff
         - transcriptDiffStats
         - summaryDiffStats
+        - transcriptWordDiffStats
+        - summaryWordDiffStats
         - observability
     ErrorResponse:
       type: object

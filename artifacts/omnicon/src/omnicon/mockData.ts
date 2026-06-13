@@ -86,10 +86,20 @@ export interface SummarySection {
 // ---- Diff (V1 -> V2) -------------------------------------------------------
 // Side-by-side (GitHub-style) diff model. Each row aligns a V1 (left) cell with
 // a V2 (right) cell. A `null` cell means there is no counterpart on that side.
-export type SideOp = "same" | "add" | "remove";
+export type SideOp = "same" | "add" | "remove" | "modified";
+
+// Intra-line token for a `modified` cell — highlights only the words that
+// changed while leaving unchanged words plain.
+export type TokenOp = "same" | "add" | "remove";
+export interface DiffTokenSpan {
+  op: TokenOp;
+  text: string;
+}
+
 export interface DiffCell {
   op: SideOp;
   text: string;
+  tokens?: DiffTokenSpan[]; // present when op === "modified"
 }
 export interface DiffPair {
   heading?: string; // section divider spanning both columns
@@ -102,6 +112,9 @@ export interface DiffTargetStats {
   removals: number;
   unchanged: number;
 }
+
+// The selectable diff presentation method in the Review screen.
+export type DiffMethod = "line" | "word";
 
 // ---- Models ----------------------------------------------------------------
 export type CostTier = "$" | "$$" | "$$$";

@@ -1,20 +1,57 @@
 import { useState } from "react";
-import { FileText, MessageSquare, Eye, X, Check } from "lucide-react";
+import {
+  FileText,
+  MessageSquare,
+  Eye,
+  X,
+  Check,
+  AlignLeft,
+  Type,
+} from "lucide-react";
 import { AppFrame, Panel, Badge, Button, SectionLabel } from "./ui";
-import type { DiffPair, DiffCell, DiffTargetStats } from "./mockData";
+import type {
+  DiffPair,
+  DiffCell,
+  DiffTokenSpan,
+  DiffTargetStats,
+  DiffMethod,
+} from "./mockData";
 
 const CELL_STYLE: Record<DiffCell["op"], string> = {
   same: "text-[#9AA4B5]",
   add: "bg-[#166534]/12 text-[#4ADE80]",
   remove: "bg-[#7F1D1D]/12 text-[#F87171]/90 line-through decoration-[#F87171]/40",
+  modified: "text-[#9AA4B5]",
 };
 
 const GUTTER: Record<DiffCell["op"] | "empty", string> = {
   same: "text-[#3A4150]",
   add: "text-[#4ADE80]",
   remove: "text-[#F87171]",
+  modified: "text-[#FBBF24]",
   empty: "text-transparent",
 };
+
+// Inline token highlighting for a `modified` cell — only changed words are
+// tinted; unchanged words stay plain. Whitespace tokens render plain so a
+// highlighted blank gap never appears.
+function TokenSpan({ token }: { token: DiffTokenSpan }) {
+  if (token.op === "same" || !token.text.trim()) {
+    return <span>{token.text}</span>;
+  }
+  if (token.op === "add") {
+    return (
+      <span className="rounded-[3px] bg-[#166534]/25 px-0.5 text-[#4ADE80]">
+        {token.text}
+      </span>
+    );
+  }
+  return (
+    <span className="rounded-[3px] bg-[#7F1D1D]/25 px-0.5 text-[#F87171]/90 line-through decoration-[#F87171]/50">
+      {token.text}
+    </span>
+  );
+}
 
 function DiffCellView({ cell }: { cell: DiffCell | null | undefined }) {
   if (!cell) {
@@ -26,7 +63,14 @@ function DiffCellView({ cell }: { cell: DiffCell | null | undefined }) {
       </div>
     );
   }
-  const mark = cell.op === "add" ? "+" : cell.op === "remove" ? "−" : "";
+  const mark =
+    cell.op === "add"
+      ? "+"
+      : cell.op === "remove"
+        ? "−"
+        : cell.op === "modified"
+          ? "~"
+          : "";
   return (
     <div className={"flex min-h-[2.25rem] items-start " + CELL_STYLE[cell.op]}>
       <div
@@ -37,7 +81,13 @@ function DiffCellView({ cell }: { cell: DiffCell | null | undefined }) {
       >
         {mark}
       </div>
-      <p className="flex-1 py-1.5 pr-3 text-[13px] leading-relaxed">{cell.text}</p>
+      <p className="flex-1 py-1.5 pr-3 text-[13px] leading-relaxed">
+        {cell.op === "modified" && cell.tokens ? (
+          cell.tokens.map((t, i) => <TokenSpan key={i} token={t} />)
+        ) : (
+          cell.text
+        )}
+      </p>
     </div>
   );
 }
@@ -93,20 +143,27 @@ function DiffTable({ pairs }: { pairs: DiffPair[] }) {
   );
 }
 
+// Both diff methods for one target (summary or transcript), precomputed so the
+// reviewer can switch methods instantly without a new model run.
+export interface DiffMethodData {
+  pairs: DiffPair[];
+  stats: DiffTargetStats;
+}
+export interface DiffTargetData {
+  line: DiffMethodData;
+  word: DiffMethodData;
+}
+
 export function DiffReview({
-  summaryPairs,
-  transcriptPairs,
-  summaryStats,
-  transcriptStats,
+  summary,
+  transcript,
   changes,
   onApprove,
   onReject,
   onStepClick,
 }: {
-  summaryPairs: DiffPair[];
-  transcriptPairs: DiffPair[];
-  summaryStats: DiffTargetStats;
-  transcriptStats: DiffTargetStats;
+  summary: DiffTargetData;
+  transcript: DiffTargetData;
   changes: string[];
   onApprove: () => void;
   onReject: () => void;
@@ -114,9 +171,11 @@ export function DiffReview({
 }) {
   const [target, setTarget] = useState<"summary" | "transcript">("summary");
   const [mode, setMode] = useState<"diff" | "v1">("diff");
+  // Default to the word method — it tightens partial edits to the changed words.
+  const [method, setMethod] = useState<DiffMethod>("word");
 
-  const pairs = target === "summary" ? summaryPairs : transcriptPairs;
-  const stats = target === "summary" ? summaryStats : transcriptStats;
+  const targetData = target === "summary" ? summary : transcript;
+  const { pairs, stats } = targetData[method];
 
   return (
     <AppFrame
@@ -126,6 +185,34 @@ export function DiffReview({
       onStepClick={onStepClick}
       headerRight={
         <>
+          <div className="inline-flex rounded-lg border border-[#2E3749] bg-[#0A0D13] p-0.5">
+            <button
+              onClick={() => setMethod("line")}
+              title="Line-level diff"
+              className={
+                "inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-[11px] transition-colors " +
+                (method === "line"
+                  ? "bg-[#5EEAD4] font-semibold text-[#06201C]"
+                  : "font-medium text-[#9AA4B5] hover:text-[#E6E9EF]")
+              }
+            >
+              <AlignLeft className="h-3.5 w-3.5" />
+              Line
+            </button>
+            <button
+              onClick={() => setMethod("word")}
+              title="Word-level diff"
+              className={
+                "inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-[11px] transition-colors " +
+                (method === "word"
+                  ? "bg-[#5EEAD4] font-semibold text-[#06201C]"
+                  : "font-medium text-[#9AA4B5] hover:text-[#E6E9EF]")
+              }
+            >
+              <Type className="h-3.5 w-3.5" />
+              Word
+            </button>
+          </div>
           <Badge tone="green">
             <span className="omni-mono">+{stats.additions}</span>
           </Badge>

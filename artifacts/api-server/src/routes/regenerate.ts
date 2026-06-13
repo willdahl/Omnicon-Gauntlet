@@ -6,7 +6,12 @@ import {
   DEFAULT_MODEL,
   isKnownModel,
 } from "../lib/models";
-import { computeLineDiff, diffStats } from "../lib/diff";
+import {
+  computeLineDiff,
+  computeWordDiff,
+  diffStats,
+  wordDiffStats,
+} from "../lib/diff";
 import { RegenerationError } from "../lib/regenerate";
 import { runPipeline, defaultPipelineConfig } from "../lib/guardrails/pipeline";
 import { logger } from "../lib/logger";
@@ -81,6 +86,11 @@ router.post("/regenerate", async (req, res) => {
       result.v2Transcript,
     );
     const summaryDiff = computeLineDiff(body.v1Summary, result.v2Summary);
+    const transcriptWordDiff = computeWordDiff(
+      body.v1Transcript,
+      result.v2Transcript,
+    );
+    const summaryWordDiff = computeWordDiff(body.v1Summary, result.v2Summary);
 
     const payload = {
       v2Transcript: result.v2Transcript,
@@ -88,8 +98,12 @@ router.post("/regenerate", async (req, res) => {
       changeExplanation: result.changeExplanation,
       transcriptDiff,
       summaryDiff,
+      transcriptWordDiff,
+      summaryWordDiff,
       transcriptDiffStats: diffStats(transcriptDiff),
       summaryDiffStats: diffStats(summaryDiff),
+      transcriptWordDiffStats: wordDiffStats(transcriptWordDiff),
+      summaryWordDiffStats: wordDiffStats(summaryWordDiff),
       observability: result.observability,
     };
 

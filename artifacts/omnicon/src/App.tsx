@@ -17,6 +17,7 @@ import {
   parseSummarySections,
   parseTranscriptSegments,
   flatDiffToPairs,
+  wordDiffToPairs,
   explanationToBullets,
   observabilityToMetrics,
   modelsToGroups,
@@ -149,10 +150,28 @@ function App() {
     () =>
       result
         ? {
-            summaryPairs: flatDiffToPairs(result.summaryDiff),
-            transcriptPairs: flatDiffToPairs(result.transcriptDiff),
-            summaryStats: mapStats(result.summaryDiffStats),
-            transcriptStats: mapStats(result.transcriptDiffStats),
+            // Both diff methods precomputed so the Review screen can toggle
+            // between line- and word-level without a new model run.
+            summary: {
+              line: {
+                pairs: flatDiffToPairs(result.summaryDiff),
+                stats: mapStats(result.summaryDiffStats),
+              },
+              word: {
+                pairs: wordDiffToPairs(result.summaryWordDiff),
+                stats: mapStats(result.summaryWordDiffStats),
+              },
+            },
+            transcript: {
+              line: {
+                pairs: flatDiffToPairs(result.transcriptDiff),
+                stats: mapStats(result.transcriptDiffStats),
+              },
+              word: {
+                pairs: wordDiffToPairs(result.transcriptWordDiff),
+                stats: mapStats(result.transcriptWordDiffStats),
+              },
+            },
             changes: explanationToBullets(result.changeExplanation),
             v2Sections: parseSummarySections(result.v2Summary),
             v2Segments: parseTranscriptSegments(result.v2Transcript),
@@ -285,10 +304,8 @@ function App() {
     case 5:
       return (
         <DiffReview
-          summaryPairs={derived!.summaryPairs}
-          transcriptPairs={derived!.transcriptPairs}
-          summaryStats={derived!.summaryStats}
-          transcriptStats={derived!.transcriptStats}
+          summary={derived!.summary}
+          transcript={derived!.transcript}
           changes={derived!.changes}
           onApprove={() => setStage(6)}
           onReject={() => setStage(4)}
@@ -314,8 +331,8 @@ function App() {
           meetingTitle={seed.meetingTitle}
           feedback={effFeedback}
           changes={derived!.changes}
-          summaryStats={derived!.summaryStats}
-          transcriptStats={derived!.transcriptStats}
+          summaryStats={derived!.summary.line.stats}
+          transcriptStats={derived!.transcript.line.stats}
           observability={result!.observability}
           onStartNew={reset}
           onStepClick={onStepClick}
