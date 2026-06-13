@@ -234,17 +234,15 @@ function App() {
 
   switch (stage) {
     case 1:
+      if (showGuardrailPanel) {
+        return <GuardrailPanel onClose={() => setShowGuardrailPanel(false)} />;
+      }
       return (
-        <>
-          <SourcePicker
-            onContinue={() => setStage(2)}
-            onStepClick={onStepClick}
-            onRunTests={DEMO_MODE ? () => setShowGuardrailPanel(true) : undefined}
-          />
-          {showGuardrailPanel && (
-            <GuardrailPanel onClose={() => setShowGuardrailPanel(false)} />
-          )}
-        </>
+        <SourcePicker
+          onContinue={() => setStage(2)}
+          onStepClick={onStepClick}
+          onRunTests={DEMO_MODE ? () => setShowGuardrailPanel(true) : undefined}
+        />
       );
     case 2:
       return (

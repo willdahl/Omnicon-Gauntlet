@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import {
-  X,
+  ArrowLeft,
   CheckCircle2,
   XCircle,
   Clock,
@@ -410,10 +410,17 @@ export function GuardrailPanel({ onClose }: { onClose: () => void }) {
   const total = 8;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-      <div className="relative flex h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-[#2E3749] bg-[#0B0E14] shadow-2xl">
-        {/* Header */}
-        <div className="flex shrink-0 items-center gap-3 border-b border-[#1B212D] px-5 py-4">
+    <div className="omni-root flex h-screen flex-col overflow-hidden bg-[#0B0E14] text-[#E6E9EF]">
+      {/* Header */}
+      <div className="shrink-0 border-b border-[#1B212D]">
+        <div className="mx-auto flex w-full max-w-3xl items-center gap-3 px-6 py-4">
+          <button
+            onClick={handleClose}
+            className="flex shrink-0 items-center gap-1.5 rounded-lg border border-[#2E3749] px-3 py-1.5 text-[12px] text-[#9AA4B5] transition-colors hover:border-[#3D4A5E] hover:text-[#E6E9EF]"
+          >
+            <ArrowLeft className="h-3.5 w-3.5" />
+            Back
+          </button>
           <div className="grid h-8 w-8 place-items-center rounded-lg border border-[#2E3749] bg-[#12161F] text-[#5EEAD4]">
             <FlaskConical className="h-4 w-4" />
           </div>
@@ -425,16 +432,12 @@ export function GuardrailPanel({ onClose }: { onClose: () => void }) {
               8 cases · temperature=0 · pipeline scaffold
             </p>
           </div>
-          <button
-            onClick={handleClose}
-            className="grid h-7 w-7 place-items-center rounded-lg border border-[#2E3749] text-[#5E6675] transition-colors hover:border-[#3D4A5E] hover:text-[#9AA4B5]"
-          >
-            <X className="h-3.5 w-3.5" />
-          </button>
         </div>
+      </div>
 
-        {/* Summary bar */}
-        <div className="flex shrink-0 items-center gap-4 border-b border-[#1B212D] bg-[#0A0D13] px-5 py-3">
+      {/* Summary bar */}
+      <div className="shrink-0 border-b border-[#1B212D] bg-[#0A0D13]">
+        <div className="mx-auto flex w-full max-w-3xl items-center gap-4 px-6 py-3">
           {runState === "running" && (
             <span className="flex items-center gap-2 text-[12px] text-[#5EEAD4]">
               <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -462,20 +465,22 @@ export function GuardrailPanel({ onClose }: { onClose: () => void }) {
             <span className="text-[#5E6675]">{total - passCount - failCount} pending</span>
           </div>
         </div>
+      </div>
 
-        {/* Progress bar */}
-        <div className="h-0.5 w-full bg-[#1B212D] shrink-0">
-          <div
-            className={cn(
-              "h-full transition-all duration-500",
-              failCount > 0 ? "bg-[#F87171]" : "bg-[#5EEAD4]",
-            )}
-            style={{ width: `${((passCount + failCount) / total) * 100}%` }}
-          />
-        </div>
+      {/* Progress bar */}
+      <div className="h-0.5 w-full bg-[#1B212D] shrink-0">
+        <div
+          className={cn(
+            "h-full transition-all duration-500",
+            failCount > 0 ? "bg-[#F87171]" : "bg-[#5EEAD4]",
+          )}
+          style={{ width: `${((passCount + failCount) / total) * 100}%` }}
+        />
+      </div>
 
-        {/* Rows */}
-        <div className="omni-scroll flex-1 overflow-y-auto">
+      {/* Rows */}
+      <div className="omni-scroll min-h-0 flex-1 overflow-y-auto">
+        <div className="mx-auto w-full max-w-3xl px-2">
           {rows.map((row) => (
             <TestRow
               key={row.id}
@@ -485,9 +490,11 @@ export function GuardrailPanel({ onClose }: { onClose: () => void }) {
             />
           ))}
         </div>
+      </div>
 
-        {/* Footer note */}
-        <div className="shrink-0 border-t border-[#1B212D] px-5 py-3">
+      {/* Footer note */}
+      <div className="shrink-0 border-t border-[#1B212D]">
+        <div className="mx-auto w-full max-w-3xl px-6 py-3">
           <p className="text-[11px] leading-relaxed text-[#5E6675]">
             Failing cases show which guardrails need to be built — "fail" here means the guardrail stage is not yet implemented, not that the regeneration engine is broken.
           </p>
