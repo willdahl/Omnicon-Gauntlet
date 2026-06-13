@@ -6,6 +6,7 @@ import {
   type RegenerateResult,
 } from "@workspace/api-client-react";
 import { SourcePicker } from "./omnicon/SourcePicker";
+import { Landing } from "./omnicon/Landing";
 import { GuardrailPanel } from "./omnicon/GuardrailPanel";
 import { ConversationPicker } from "./omnicon/ConversationPicker";
 import { ModelPicker } from "./omnicon/ModelPicker";
@@ -114,7 +115,7 @@ function describeRegenError(error: unknown, modelName: string): string {
 // guardrail test suite CTA. Off by default so it does not appear in production.
 const DEMO_MODE = import.meta.env.VITE_DEMO_MODE === "true";
 
-function App() {
+function Harness() {
   const seedQuery = useGetRegenerateSeed();
   const regen = useRegenerate();
   const seed = seedQuery.data;
@@ -341,6 +342,20 @@ function App() {
     default:
       return null;
   }
+}
+
+// Landing page sits "upstream" of the harness. The visitor opts in via any of
+// the landing's "Get Started" actions, which flips `entered` and mounts the
+// existing step machine (starting at the Source step). Keeping the seed query
+// inside Harness means it only fires once the visitor enters the app.
+function App() {
+  const [entered, setEntered] = useState(false);
+
+  if (!entered) {
+    return <Landing onGetStarted={() => setEntered(true)} />;
+  }
+
+  return <Harness />;
 }
 
 export default App;
