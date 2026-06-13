@@ -1,20 +1,15 @@
 import { useState } from "react";
 import { AppFrame, Panel, Badge, Button, Avatar, SectionLabel } from "./_shared/ui";
-import {
-  TRANSCRIPT,
-  SUMMARY_V1,
-  REVIEWER_FEEDBACK,
-  REFERENCED_SPAN,
-} from "./_shared/mockData";
-import { AlertTriangle, Quote, Sparkles, X } from "lucide-react";
+import { TRANSCRIPT, SUMMARY_V1, REVIEWER_FEEDBACK } from "./_shared/mockData";
+import { AlertTriangle, Sparkles } from "lucide-react";
 
 export function ReviewWorkspace() {
-  const [view, setView] = useState<"transcript" | "summary">("transcript");
+  const [view, setView] = useState<"transcript" | "summary">("summary");
   return (
     <AppFrame
       step={4}
-      title="Review the summary"
-      subtitle="Read the transcript against the AI summary, then tell OMNICON what to fix before regenerating."
+      title="Review"
+      subtitle="Read the AI-generated summary and type feedback as you go. The transcript is available to reference and update as well."
       headerRight={
         <>
           <Badge tone="neutral">Granola</Badge>
@@ -38,17 +33,6 @@ export function ReviewWorkspace() {
           <div className="shrink-0 border-b border-[#1B212D] px-4 py-3">
             <div className="inline-flex rounded-lg border border-[#2E3749] bg-[#0A0D13] p-1">
               <button
-                onClick={() => setView("transcript")}
-                className={
-                  "rounded-md px-4 py-1.5 text-[12px] transition-colors " +
-                  (view === "transcript"
-                    ? "bg-[#5EEAD4] font-semibold text-[#06201C]"
-                    : "font-medium text-[#9AA4B5] hover:text-[#E6E9EF]")
-                }
-              >
-                Transcript
-              </button>
-              <button
                 onClick={() => setView("summary")}
                 className={
                   "rounded-md px-4 py-1.5 text-[12px] transition-colors " +
@@ -58,6 +42,17 @@ export function ReviewWorkspace() {
                 }
               >
                 Summary
+              </button>
+              <button
+                onClick={() => setView("transcript")}
+                className={
+                  "rounded-md px-4 py-1.5 text-[12px] transition-colors " +
+                  (view === "transcript"
+                    ? "bg-[#5EEAD4] font-semibold text-[#06201C]"
+                    : "font-medium text-[#9AA4B5] hover:text-[#E6E9EF]")
+                }
+              >
+                Transcript
               </button>
             </div>
           </div>
@@ -149,33 +144,8 @@ export function ReviewWorkspace() {
 
           <textarea
             defaultValue={REVIEWER_FEEDBACK}
-            className="omni-scroll mt-3 min-h-[160px] w-full resize-none rounded-lg border border-[#2E3749] bg-[#0A0D13] p-3 text-[13px] leading-relaxed text-[#E6E9EF] outline-none focus:border-[#0F766E]"
+            className="omni-scroll mt-3 min-h-[160px] flex-1 w-full resize-none rounded-lg border border-[#2E3749] bg-[#0A0D13] p-3 text-[13px] leading-relaxed text-[#E6E9EF] outline-none focus:border-[#0F766E]"
           />
-
-          <div className="mt-4">
-            <SectionLabel>Referenced span (optional)</SectionLabel>
-            <div className="rounded-lg border border-[#232A38] bg-[#0A0D13] p-3">
-              <div className="flex items-start gap-2.5">
-                <Quote className="mt-0.5 h-4 w-4 shrink-0 text-[#5EEAD4]" />
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2">
-                    <span className="text-[12px] font-semibold text-[#E6E9EF]">
-                      {REFERENCED_SPAN.speaker}
-                    </span>
-                    <span className="omni-mono text-[11px] text-[#5E6675]">
-                      {REFERENCED_SPAN.t}
-                    </span>
-                  </div>
-                  <p className="mt-1 text-[12px] leading-relaxed text-[#9AA4B5]">
-                    "{REFERENCED_SPAN.text}"
-                  </p>
-                </div>
-                <button className="shrink-0 rounded p-0.5 text-[#5E6675] hover:text-[#E6E9EF]">
-                  <X className="h-3.5 w-3.5" />
-                </button>
-              </div>
-            </div>
-          </div>
 
           <div className="mt-auto pt-4">
             <Button variant="primary" className="w-full">

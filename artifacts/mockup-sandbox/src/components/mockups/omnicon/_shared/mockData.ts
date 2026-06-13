@@ -210,40 +210,94 @@ export const REFERENCED_SPAN = {
 };
 
 // ---- Diff (V1 -> V2) -------------------------------------------------------
-export type DiffOp = "same" | "add" | "remove";
-export interface DiffLine {
-  op: DiffOp;
-  heading?: boolean;
+// Side-by-side (GitHub-style) diff model. Each row aligns a V1 (left) cell with
+// a V2 (right) cell. A `null` cell means there is no counterpart on that side.
+export type SideOp = "same" | "add" | "remove";
+export interface DiffCell {
+  op: SideOp;
   text: string;
 }
+export interface DiffPair {
+  heading?: string; // section divider spanning both columns
+  left?: DiffCell | null;
+  right?: DiffCell | null;
+}
 
-export const SUMMARY_DIFF: DiffLine[] = [
-  { op: "same", heading: true, text: "Overview" },
-  { op: "same", text: "Q3 product review covering roadmap status, mobile rollout, analytics, and design hiring." },
-  { op: "same", text: "The web analytics revamp remains on track for end of Q3." },
-  { op: "same", heading: true, text: "Decisions" },
-  { op: "remove", text: "Mobile rollout is delayed from August to Q4." },
-  { op: "add", text: "Mobile rollout slips from August to a committed launch date of October 12, 2026." },
-  { op: "same", text: "Analytics revamp budget approved by finance." },
-  { op: "same", text: "Design hiring freeze lifted; two senior product designer roles to open." },
-  { op: "same", heading: true, text: "Action items" },
-  { op: "remove", text: "Marcus to own the mobile rollout and share a plan." },
-  { op: "add", text: "Priya to own the mobile rollout and circulate a rollout plan by Thursday." },
-  { op: "add", text: "Marcus to continue leading the analytics revamp." },
-  { op: "same", text: "Tomás to begin analytics data model work next sprint." },
-  { op: "remove", text: "Pricing experiment decision deferred to next week." },
-  { op: "add", text: "Pricing experiment decision deferred to next week's session." },
+export const SUMMARY_DIFF_PAIRS: DiffPair[] = [
+  { heading: "Overview" },
+  {
+    left: { op: "same", text: "Q3 product review covering roadmap status, mobile rollout, analytics, and design hiring." },
+    right: { op: "same", text: "Q3 product review covering roadmap status, mobile rollout, analytics, and design hiring." },
+  },
+  {
+    left: { op: "same", text: "The web analytics revamp remains on track for end of Q3." },
+    right: { op: "same", text: "The web analytics revamp remains on track for end of Q3." },
+  },
+  { heading: "Decisions" },
+  {
+    left: { op: "remove", text: "Mobile rollout is delayed from August to Q4." },
+    right: { op: "add", text: "Mobile rollout slips from August to a committed launch date of October 12, 2026." },
+  },
+  {
+    left: { op: "same", text: "Analytics revamp budget approved by finance." },
+    right: { op: "same", text: "Analytics revamp budget approved by finance." },
+  },
+  {
+    left: { op: "same", text: "Design hiring freeze lifted; two senior product designer roles to open." },
+    right: { op: "same", text: "Design hiring freeze lifted; two senior product designer roles to open." },
+  },
+  { heading: "Action items" },
+  {
+    left: { op: "remove", text: "Marcus to own the mobile rollout and share a plan." },
+    right: { op: "add", text: "Priya to own the mobile rollout and circulate a rollout plan by Thursday." },
+  },
+  {
+    left: null,
+    right: { op: "add", text: "Marcus to continue leading the analytics revamp." },
+  },
+  {
+    left: { op: "same", text: "Tomás to begin analytics data model work next sprint." },
+    right: { op: "same", text: "Tomás to begin analytics data model work next sprint." },
+  },
+  {
+    left: { op: "remove", text: "Pricing experiment decision deferred to next week." },
+    right: { op: "add", text: "Pricing experiment decision deferred to next week's session." },
+  },
 ];
 
-// Transcript diff — mostly unchanged, a couple of corrected attributions.
-export const TRANSCRIPT_DIFF: DiffLine[] = [
-  { op: "same", text: "DW 01:52 — Perfect, Priya owns mobile rollout then. Target October 12th." },
-  { op: "remove", text: "ML 02:18 — On analytics, we got the greenlight from finance, so the revamp budget is approved." },
-  { op: "add", text: "TR 02:18 — On analytics, we got the greenlight from finance, so the revamp budget is approved." },
-  { op: "same", text: "PN 02:51 — Lifted as of Monday. We can open the two senior product designer reqs." },
+// Transcript diff — mostly unchanged, one corrected speaker attribution.
+export const TRANSCRIPT_DIFF_PAIRS: DiffPair[] = [
+  {
+    left: { op: "same", text: "DW 01:52 — Perfect, Priya owns mobile rollout then. Target October 12th." },
+    right: { op: "same", text: "DW 01:52 — Perfect, Priya owns mobile rollout then. Target October 12th." },
+  },
+  {
+    left: { op: "remove", text: "ML 02:18 — On analytics, we got the greenlight from finance, so the revamp budget is approved." },
+    right: { op: "add", text: "TR 02:18 — On analytics, we got the greenlight from finance, so the revamp budget is approved." },
+  },
+  {
+    left: { op: "same", text: "PN 02:51 — Lifted as of Monday. We can open the two senior product designer reqs." },
+    right: { op: "same", text: "PN 02:51 — Lifted as of Monday. We can open the two senior product designer reqs." },
+  },
 ];
 
-export const DIFF_STATS = { additions: 5, removals: 4, unchanged: 9 };
+// Per-target change stats, derived from the pairs above.
+export const DIFF_TARGET_STATS = {
+  summary: { additions: 4, removals: 3, unchanged: 5 },
+  transcript: { additions: 1, removals: 1, unchanged: 2 },
+};
+
+// Plain-language recap of what changed, shown above the diff itself.
+export const DIFF_CHANGE_SUMMARY = {
+  summary: [
+    "Corrected the mobile rollout owner from Marcus to Priya, with an explicit committed date (October 12, 2026).",
+    "Added that Marcus continues leading the analytics revamp.",
+    "Tightened the wording on the pricing-experiment deferral.",
+  ],
+  transcript: [
+    "Fixed one speaker attribution at 02:18 — the analytics budget line was reassigned from Marcus to Tomás.",
+  ],
+};
 
 // ---- Models ----------------------------------------------------------------
 export type CostTier = "$" | "$$" | "$$$";
