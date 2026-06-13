@@ -1,0 +1,1 @@
+- [Subagent screenshot limitation](subagent-screenshot-limitation.md) — subagents can't screenshot or run tests; the parent must visually verify canvas/mockup renders.
