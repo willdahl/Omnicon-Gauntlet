@@ -68,7 +68,7 @@ export const MEETINGS: MeetingSummaryItem[] = [
   {
     id: "mtg-gauntlet-project",
     title: "Gauntlet Project",
-    date: "Jun 12, 2026",
+    date: "Fri, 12 Jun 26",
     time: "—",
     durationMin: 12,
     platform: "In person",
@@ -290,17 +290,29 @@ export const SUMMARY_V2: SummarySection[] = [
 ];
 
 // Reviewer feedback that drives V1 -> V2 (pre-filled in the review workspace).
+// Transcribed from the reviewer's feedback_v1 doc.
 export const REVIEWER_FEEDBACK = `What matched — leave unchanged
-• The Versioned Roadmap V2 and V3 bullets are accurate.
-• The Technical Framing (from collaborator) section is accurate, including the raw → silver → golden tiers and the agentic-ETL framing.
-• "Keeping transcript and summary separate enables cross-tool comparison" is correct and worth keeping verbatim.
+
+The Versioned Roadmap V2 and V3 bullets are accurate.
+The Technical Framing (from collaborator) section is accurate, including the raw → silver → golden tiers and the agentic-ETL framing.
+"Keeping transcript and summary separate enables cross-tool comparison" is correct and worth keeping verbatim.
 
 What didn't match — please correct (each is grounded in the transcript)
-1. Missing the originating motivation. The Gauntlet Concept never says what kicked this off — I'd used Granola to capture a personal narrative of my background and wanted to turn that outline into visualizations, but it "got some things right and some things wrong." Add a bullet capturing that origin.
-2. "Best transcription" is a core driver and it's absent. A primary goal is comparing transcription quality across providers, not just summary quality. Add this to the concept or to Open Questions.
-3. The V1 bullet is too thin on mechanics. Note that V1 runs as a loop/queue across connected MCPs that routes each conversation either to human review (V1) or to transformation (V2/V3).
-4. The deferred-actions decision is missing. We discussed extracting actions/tickets and I deliberately deferred it — the MVP is human review of the summary first. Add a one-line scope note.
-5. Attendee/speaker labels are incomplete. The transcript header lists only "William Dahl," but this was a two-person soundboard — Speaker A is me, Speaker B is a collaborator. Label Speaker B as "Collaborator."`;
+
+Missing the originating motivation. The Gauntlet Concept section never says what kicked this off — I'd used Granola to capture a personal narrative of my background and wanted to turn that outline into visualizations, but it "got some things right and some things wrong." Add a bullet capturing that origin.
+Transcript: "when I used Granola earlier today, I was giving a personal narrative of my background … take the outline and use that to build some visualizations. But it got some things right and some things wrong."
+
+"Best transcription" is a core driver and it's absent. A primary goal is comparing transcription quality across providers, not just summary quality. Add this to the concept or to Open Questions.
+Transcript: "the biggest thing is having … who's got the best transcription."
+
+The V1 bullet is too thin on mechanics. Under V1 — human-in-the-loop summary review, note that it runs as a loop/queue across connected MCPs that routes each conversation either to human review (V1) or to transformation (V2/V3).
+Transcript: "turn that into a loop or service and loops across all the mcps I have connected and then queues these up."
+
+The deferred-actions decision is missing. We discussed extracting actions/tickets, and I deliberately deferred it — the MVP is human review of the summary first. Add a one-line scope note.
+Transcript: "I just want to make the MVP where the notes of summary have the ability to review that with human loop first."
+
+Attendee/speaker labels are incomplete. The transcript header lists only "William Dahl," but this was a two-person soundboard — Speaker A is me, Speaker B is a collaborator. Label Speaker B as "Collaborator" in the V2 transcript.
+Transcript: two distinct speakers throughout; the summary itself credits "Technical Framing (from collaborator)."`;
 
 export const REFERENCED_SPAN = {
   segmentId: "s5",
