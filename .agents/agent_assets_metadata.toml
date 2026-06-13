@@ -1,0 +1,8 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "i01uk8PYVlPWOTyHFgQXZ"
+uri = "file://README.md"
+type = "text"
+title = "OMNICON README"
