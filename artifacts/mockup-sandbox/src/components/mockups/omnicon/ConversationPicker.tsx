@@ -1,4 +1,4 @@
-import { Search, Check, ArrowRight, Folder } from "lucide-react";
+import { Search, Check, ArrowRight } from "lucide-react";
 import { AppFrame, Panel, Badge, Button, Avatar } from "./_shared/ui";
 import { MEETINGS } from "./_shared/mockData";
 
@@ -91,10 +91,6 @@ export function ConversationPicker() {
                       <h3 className="text-[15px] font-semibold text-[#E6E9EF]">
                         {m.title}
                       </h3>
-                      <Badge tone="neutral">
-                        <Folder className="h-3 w-3" />
-                        {m.folder}
-                      </Badge>
                       <span className="text-[12px] text-[#9AA4B5]">
                         {m.platform}
                       </span>
