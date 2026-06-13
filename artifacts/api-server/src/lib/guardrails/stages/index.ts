@@ -2,6 +2,7 @@ import type { PreGuardrailStage, PostGuardrailStage } from "../types";
 import { languageGuard } from "./language";
 import { locatabilityGuard, groundingGuard } from "./grounding";
 import { scopedDiffGuard } from "./scoped-diff";
+import { feedbackInjectionGuard, transcriptInjectionGuard } from "./injection";
 
 /**
  * Central guardrail stage registry.
@@ -17,8 +18,12 @@ import { scopedDiffGuard } from "./scoped-diff";
  */
 export const preStages: PreGuardrailStage[] = [
   languageGuard,
+  feedbackInjectionGuard,
   locatabilityGuard,
   groundingGuard,
 ];
 
-export const postStages: PostGuardrailStage[] = [scopedDiffGuard];
+export const postStages: PostGuardrailStage[] = [
+  scopedDiffGuard,
+  transcriptInjectionGuard,
+];
