@@ -113,7 +113,7 @@ export async function regenerate(
     completion = await openrouter.chat.completions.create(
       {
         model: input.model,
-        max_tokens: 8192,
+        max_tokens: 32768,
         messages: [{ role: "user", content: prompt }],
         // OpenRouter-specific: request reasoning traces when the provider
         // exposes them. Cast because this is not in the base OpenAI types.
