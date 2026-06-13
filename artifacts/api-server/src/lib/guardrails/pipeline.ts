@@ -6,6 +6,7 @@ import type {
   PostGuardrailStage,
 } from "./types";
 import { PASS } from "./types";
+import { preStages, postStages } from "./stages";
 
 export interface PipelineConfig {
   preStages?: PreGuardrailStage[];
@@ -79,6 +80,6 @@ export async function runPipeline(
 }
 
 export const defaultPipelineConfig: PipelineConfig = {
-  preStages: [],
-  postStages: [],
+  preStages,
+  postStages,
 };
