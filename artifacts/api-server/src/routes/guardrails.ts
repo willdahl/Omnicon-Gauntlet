@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { runTestSuite, type TestCaseResult } from "../lib/guardrails/run-tests";
+import { runTestSuite } from "../lib/guardrails/run-tests";
 import { logger } from "../lib/logger";
 
 const router: IRouter = Router();
@@ -26,14 +26,11 @@ router.post("/guardrails/run-tests", async (req, res) => {
 
   sendEvent("start", { total: 8 });
 
-  const results: TestCaseResult[] = [];
-
   try {
-    await runTestSuite((partial) => {
+    // Cases run concurrently; progress events stream as each finishes (out of
+    // order), while the returned array preserves canonical TEST_CASES order.
+    const results = await runTestSuite((partial) => {
       sendEvent("progress", partial);
-      if (partial.status !== "running") {
-        results.push(partial);
-      }
     });
 
     const passed = results.filter((r) => r.status === "pass").length;

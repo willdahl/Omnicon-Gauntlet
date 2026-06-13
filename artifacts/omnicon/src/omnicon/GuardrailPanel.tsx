@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import {
   X,
   CheckCircle2,
@@ -10,6 +10,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { GUARDRAIL_META_MAP, type TestExpected } from "./guardrail-meta";
 
 export type TestStatus = "pending" | "running" | "pass" | "fail";
 
@@ -27,6 +28,13 @@ export interface TestCaseRow {
   status: TestStatus;
   reason?: string;
   telemetry?: TestTelemetry;
+  description?: string;
+  inputTranscript?: string;
+  inputSummary?: string;
+  feedback?: string;
+  outputTranscript?: string;
+  outputSummary?: string;
+  expected?: TestExpected;
 }
 
 interface Summary {
@@ -87,8 +95,86 @@ function TelemetryLine({ telemetry }: { telemetry: TestTelemetry }) {
   );
 }
 
+function Field({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <div>
+      <p className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-[#3D4A5E]">
+        {label}
+      </p>
+      {children}
+    </div>
+  );
+}
+
+function TextBlock({ value }: { value?: string }) {
+  if (!value) {
+    return (
+      <p className="omni-mono text-[11px] italic text-[#3D4A5E]">— awaiting run</p>
+    );
+  }
+  return (
+    <pre className="omni-mono max-h-[9rem] overflow-y-auto rounded-md border border-[#1B212D] bg-[#080B11] px-3 py-2 text-[11px] leading-relaxed text-[#7A8494] whitespace-pre-wrap break-words">
+      {value}
+    </pre>
+  );
+}
+
+function sideEffectLabel(effect: string): string {
+  switch (effect) {
+    case "pipeline_blocked": return "blocks pipeline";
+    case "pipeline_not_blocked": return "must pass through";
+    case "no_content_added": return "must produce no changes";
+    default: return effect;
+  }
+}
+
+function ExpectedList({ expected }: { expected: TestExpected }) {
+  const items: string[] = [];
+
+  for (const reason of expected.flagged_reasons ?? []) {
+    items.push(`flags: ${reason}`);
+  }
+  for (const effect of expected.side_effects ?? []) {
+    items.push(sideEffectLabel(effect));
+  }
+  for (const span of expected.edited_spans ?? []) {
+    if (span.present) {
+      items.push(`must contain "${span.substring}"`);
+    } else {
+      items.push(`must NOT contain "${span.substring}"`);
+    }
+  }
+
+  if (items.length === 0) {
+    return (
+      <p className="omni-mono text-[11px] italic text-[#3D4A5E]">— none</p>
+    );
+  }
+
+  return (
+    <ul className="space-y-0.5">
+      {items.map((item, i) => (
+        <li key={i} className="flex items-start gap-1.5 text-[11px] text-[#9AA4B5]">
+          <span className="mt-[2px] shrink-0 text-[#3D4A5E]">·</span>
+          <span className="omni-mono">{item}</span>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 function TestRow({ row, expanded, onToggle }: { row: TestCaseRow; expanded: boolean; onToggle: () => void }) {
-  const hasDetail = row.reason || row.telemetry;
+  const hasResult = !!(row.reason || row.telemetry);
+  const hasDetail = !!(
+    row.description ||
+    row.inputTranscript ||
+    row.inputSummary ||
+    row.feedback ||
+    row.outputTranscript ||
+    row.outputSummary ||
+    row.expected ||
+    hasResult
+  );
 
   return (
     <div
@@ -124,13 +210,54 @@ function TestRow({ row, expanded, onToggle }: { row: TestCaseRow; expanded: bool
       </button>
 
       {expanded && hasDetail && (
-        <div className="px-4 pb-3 pt-0 pl-[3.25rem]">
-          {row.reason && (
-            <p className="text-[12px] leading-relaxed text-[#F87171]">
-              {row.reason}
-            </p>
+        <div className="px-4 pb-4 pt-0 pl-[3.25rem] space-y-3">
+          {row.description && (
+            <Field label="Description">
+              <p className="text-[12px] leading-relaxed text-[#9AA4B5]">
+                {row.description}
+              </p>
+            </Field>
           )}
-          {row.telemetry && <TelemetryLine telemetry={row.telemetry} />}
+
+          <Field label="Input Transcript">
+            <TextBlock value={row.inputTranscript} />
+          </Field>
+
+          <Field label="Input Summary">
+            <TextBlock value={row.inputSummary} />
+          </Field>
+
+          <Field label="User Feedback">
+            <TextBlock value={row.feedback} />
+          </Field>
+
+          <Field label="Output Transcript">
+            <TextBlock value={row.outputTranscript} />
+          </Field>
+
+          <Field label="Output Summary">
+            <TextBlock value={row.outputSummary} />
+          </Field>
+
+          {row.expected && (
+            <Field label="Expected">
+              <ExpectedList expected={row.expected} />
+            </Field>
+          )}
+
+          {hasResult && (
+            <Field label="Test Result">
+              {row.status === "pass" && !row.reason && (
+                <p className="text-[12px] text-[#4ADE80]">✓ pass</p>
+              )}
+              {row.reason && (
+                <p className="text-[12px] leading-relaxed text-[#F87171]">
+                  {row.reason}
+                </p>
+              )}
+              {row.telemetry && <TelemetryLine telemetry={row.telemetry} />}
+            </Field>
+          )}
         </div>
       )}
     </div>
@@ -139,12 +266,38 @@ function TestRow({ row, expanded, onToggle }: { row: TestCaseRow; expanded: bool
 
 const ALL_CASE_IDS = ["G1", "G2", "G3", "G4-A", "G4-B", "G5-A", "G5-B", "G5-C"];
 
+/**
+ * Merge a streamed row into the existing one, keeping previously-known fields
+ * (e.g. the input metadata shown before the run) when a later event omits them.
+ */
+function mergeRow(base: TestCaseRow, incoming: TestCaseRow): TestCaseRow {
+  return {
+    ...base,
+    ...incoming,
+    description: incoming.description ?? base.description,
+    inputTranscript: incoming.inputTranscript ?? base.inputTranscript,
+    inputSummary: incoming.inputSummary ?? base.inputSummary,
+    feedback: incoming.feedback ?? base.feedback,
+    outputTranscript: incoming.outputTranscript ?? base.outputTranscript,
+    outputSummary: incoming.outputSummary ?? base.outputSummary,
+    expected: incoming.expected ?? base.expected,
+  };
+}
+
 function buildInitialRows(): TestCaseRow[] {
-  return ALL_CASE_IDS.map((id) => ({
-    id,
-    guardrail: "",
-    status: "pending",
-  }));
+  return ALL_CASE_IDS.map((id) => {
+    const meta = GUARDRAIL_META_MAP.get(id);
+    return {
+      id,
+      guardrail: meta?.guardrail ?? "",
+      status: "pending",
+      description: meta?.description,
+      inputTranscript: meta?.inputTranscript,
+      inputSummary: meta?.inputSummary,
+      feedback: meta?.feedback,
+      expected: meta?.expected,
+    };
+  });
 }
 
 export function GuardrailPanel({ onClose }: { onClose: () => void }) {
@@ -218,14 +371,21 @@ export function GuardrailPanel({ onClose }: { onClose: () => void }) {
             if (eventType === "progress") {
               const p = payload as TestCaseRow;
               setRows((prev) =>
-                prev.map((r) => (r.id === p.id ? { ...r, ...p } : r)),
+                prev.map((r) => (r.id === p.id ? mergeRow(r, p) : r)),
               );
               if (p.status === "fail") {
                 setExpandedIds((prev) => new Set([...prev, p.id]));
               }
             } else if (eventType === "complete") {
               const c = payload as { results: TestCaseRow[]; summary: Summary };
-              setRows(c.results);
+              setRows((prev) =>
+                c.results.map((incoming) => {
+                  const existing = prev.find((r) => r.id === incoming.id);
+                  return existing
+                    ? mergeRow(existing, incoming)
+                    : incoming;
+                }),
+              );
               setSummary(c.summary);
               setRunState("done");
             } else if (eventType === "error") {

@@ -1,5 +1,10 @@
 import { runPipeline, defaultPipelineConfig } from "./pipeline";
-import { TEST_CASES, type TestCase, type SideEffect } from "./test-fixtures";
+import {
+  TEST_CASES,
+  type TestCase,
+  type SideEffect,
+  type TestExpected,
+} from "./test-fixtures";
 import type { FlagReason } from "./types";
 import { DEFAULT_MODEL } from "../models";
 
@@ -19,6 +24,17 @@ export interface TestCaseResult {
   status: TestStatus;
   reason?: string;
   telemetry?: TestTelemetry;
+  /** What this case exercises (known up front, sent on the running event). */
+  description?: string;
+  /** Input (v1) — known up front. */
+  inputTranscript?: string;
+  inputSummary?: string;
+  feedback?: string;
+  /** Output (v2) — populated once the pipeline produces a result. */
+  outputTranscript?: string;
+  outputSummary?: string;
+  /** Expected assertions for this case (known up front). */
+  expected?: TestExpected;
 }
 
 function evaluateResult(
@@ -105,84 +121,97 @@ function checkSideEffect(
   }
 }
 
-export async function runTestSuite(
+async function runSingleCase(
+  tc: TestCase,
   onProgress?: (result: TestCaseResult) => void,
-): Promise<TestCaseResult[]> {
-  const results: TestCaseResult[] = [];
+): Promise<TestCaseResult> {
+  // Case metadata known before the LLM runs (input side of the before/after).
+  const base = {
+    id: tc.id,
+    guardrail: tc.guardrail,
+    description: tc.description,
+    inputTranscript: tc.fixture.v1Transcript ?? "",
+    inputSummary: tc.fixture.v1Summary,
+    feedback: tc.feedback,
+    expected: tc.expected,
+  };
 
-  for (const tc of TEST_CASES) {
-    if (onProgress) {
-      onProgress({
-        id: tc.id,
-        guardrail: tc.guardrail,
-        status: "running",
-      });
-    }
+  onProgress?.({ ...base, status: "running" });
 
-    const start = Date.now();
-    let result: TestCaseResult;
+  const start = Date.now();
+  let result: TestCaseResult;
 
-    try {
-      const pipelineOutput = await runPipeline(
-        {
-          v1Transcript: tc.fixture.v1Transcript ?? "",
-          v1Summary: tc.fixture.v1Summary,
-          feedback: tc.feedback,
-          model: DEFAULT_MODEL,
-          temperature: 0,
-        },
-        defaultPipelineConfig,
-      );
+  try {
+    const pipelineOutput = await runPipeline(
+      {
+        v1Transcript: tc.fixture.v1Transcript ?? "",
+        v1Summary: tc.fixture.v1Summary,
+        feedback: tc.feedback,
+        model: DEFAULT_MODEL,
+        temperature: 0,
+      },
+      defaultPipelineConfig,
+    );
 
-      const latencyMs = Date.now() - start;
-      const evaluation = evaluateResult(tc, pipelineOutput);
+    const latencyMs = Date.now() - start;
+    const evaluation = evaluateResult(tc, pipelineOutput);
 
-      const telemetry: TestTelemetry = pipelineOutput.output
-        ? {
-            model: pipelineOutput.output.observability.model,
-            inputTokens: pipelineOutput.output.observability.inputTokens,
-            outputTokens: pipelineOutput.output.observability.outputTokens,
-            latencyMs,
-            estimatedCostUsd:
-              pipelineOutput.output.observability.estimatedCostUsd,
-          }
-        : {
-            model: DEFAULT_MODEL,
-            inputTokens: 0,
-            outputTokens: 0,
-            latencyMs,
-            estimatedCostUsd: null,
-          };
-
-      result = {
-        id: tc.id,
-        guardrail: tc.guardrail,
-        status: evaluation.pass ? "pass" : "fail",
-        reason: evaluation.reason,
-        telemetry,
-      };
-    } catch (err) {
-      const message = err instanceof Error ? err.message : String(err);
-      result = {
-        id: tc.id,
-        guardrail: tc.guardrail,
-        status: "fail",
-        reason: `Test runner error: ${message}`,
-        telemetry: {
+    const telemetry: TestTelemetry = pipelineOutput.output
+      ? {
+          model: pipelineOutput.output.observability.model,
+          inputTokens: pipelineOutput.output.observability.inputTokens,
+          outputTokens: pipelineOutput.output.observability.outputTokens,
+          latencyMs,
+          estimatedCostUsd:
+            pipelineOutput.output.observability.estimatedCostUsd,
+        }
+      : {
           model: DEFAULT_MODEL,
           inputTokens: 0,
           outputTokens: 0,
-          latencyMs: Date.now() - start,
+          latencyMs,
           estimatedCostUsd: null,
-        },
-      };
-    }
+        };
 
-    results.push(result);
-    if (onProgress) {
-      onProgress(result);
-    }
+    result = {
+      ...base,
+      status: evaluation.pass ? "pass" : "fail",
+      reason: evaluation.reason,
+      telemetry,
+      outputTranscript: pipelineOutput.output?.v2Transcript,
+      outputSummary: pipelineOutput.output?.v2Summary,
+    };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    result = {
+      ...base,
+      status: "fail",
+      reason: `Test runner error: ${message}`,
+      telemetry: {
+        model: DEFAULT_MODEL,
+        inputTokens: 0,
+        outputTokens: 0,
+        latencyMs: Date.now() - start,
+        estimatedCostUsd: null,
+      },
+    };
   }
 
-  return results;
+  onProgress?.(result);
+  return result;
+}
+
+/**
+ * Runs all guardrail test cases concurrently. Each case streams its own
+ * "running" event and final result via `onProgress` as it progresses (so the
+ * panel updates live, out of completion order), while the returned array
+ * preserves the original TEST_CASES order for the final summary.
+ *
+ * Each case catches its own errors and resolves to a "fail" result, so a single
+ * failing case never aborts the rest of the suite.
+ */
+export async function runTestSuite(
+  onProgress?: (result: TestCaseResult) => void,
+): Promise<TestCaseResult[]> {
+  return Promise.all(TEST_CASES.map((tc) => runSingleCase(tc, onProgress)));
 }
