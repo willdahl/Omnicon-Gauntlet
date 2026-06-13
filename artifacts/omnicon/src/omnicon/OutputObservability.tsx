@@ -1,4 +1,5 @@
-import { CheckCircle, Download, Copy, RotateCcw } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { CheckCircle, Download, Copy, RotateCcw, FileDown } from "lucide-react";
 import { AppFrame, Panel, Badge, Button, Stat, Avatar } from "./ui";
 import type {
   SummarySection,
@@ -6,12 +7,23 @@ import type {
   ObsMetric,
   RunMeta,
 } from "./mockData";
+import {
+  exportSummary,
+  exportTranscript,
+  exportReviewNotes,
+  type ExportDiffStats,
+} from "./exportUtils";
 
 export function OutputObservability({
   summary,
   transcript,
   metrics,
   runMeta,
+  meetingTitle,
+  feedback,
+  changes,
+  summaryStats,
+  transcriptStats,
   onStartNew,
   onStepClick,
 }: {
@@ -19,9 +31,52 @@ export function OutputObservability({
   transcript: TranscriptSegment[];
   metrics: ObsMetric[];
   runMeta: RunMeta;
+  meetingTitle: string;
+  feedback: string;
+  changes: string[];
+  summaryStats: ExportDiffStats;
+  transcriptStats: ExportDiffStats;
   onStartNew: () => void;
   onStepClick?: (step: number) => void;
 }) {
+  const [exportOpen, setExportOpen] = useState(false);
+  const exportRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!exportOpen) return;
+    const handler = (e: MouseEvent) => {
+      if (exportRef.current && !exportRef.current.contains(e.target as Node)) {
+        setExportOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [exportOpen]);
+
+  const exportItems = [
+    {
+      label: "Summary (.md)",
+      onClick: () => {
+        exportSummary(meetingTitle, summary);
+        setExportOpen(false);
+      },
+    },
+    {
+      label: "Transcript (.md)",
+      onClick: () => {
+        exportTranscript(meetingTitle, transcript);
+        setExportOpen(false);
+      },
+    },
+    {
+      label: "Review Notes (.md)",
+      onClick: () => {
+        exportReviewNotes(meetingTitle, feedback, changes, summaryStats, transcriptStats);
+        setExportOpen(false);
+      },
+    },
+  ];
+
   return (
     <AppFrame
       step={6}
@@ -37,10 +92,29 @@ export function OutputObservability({
       footer={
         <>
           <div className="flex items-center gap-2">
-            <Button variant="secondary">
-              <Download className="h-4 w-4" />
-              Export
-            </Button>
+            <div ref={exportRef} className="relative">
+              <Button
+                variant="secondary"
+                onClick={() => setExportOpen((v) => !v)}
+              >
+                <Download className="h-4 w-4" />
+                Export
+              </Button>
+              {exportOpen && (
+                <div className="absolute bottom-full left-0 z-20 mb-1.5 min-w-[190px] rounded-lg border border-[#2E3749] bg-[#12161F] py-1 shadow-xl">
+                  {exportItems.map((item) => (
+                    <button
+                      key={item.label}
+                      onClick={item.onClick}
+                      className="flex w-full items-center gap-2.5 px-3 py-2 text-[13px] text-[#9AA4B5] transition-colors hover:bg-[#1C2230] hover:text-[#E6E9EF]"
+                    >
+                      <FileDown className="h-3.5 w-3.5 shrink-0" />
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
             <Button variant="ghost">
               <Copy className="h-4 w-4" />
               Copy summary

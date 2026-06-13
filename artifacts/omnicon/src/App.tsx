@@ -288,6 +288,11 @@ function App() {
             totalTokens: result!.observability.totalTokens,
             reasoning: result!.observability.reasoning,
           }}
+          meetingTitle={seed.meetingTitle}
+          feedback={effFeedback}
+          changes={derived!.changes}
+          summaryStats={derived!.summaryStats}
+          transcriptStats={derived!.transcriptStats}
           onStartNew={reset}
           onStepClick={onStepClick}
         />
