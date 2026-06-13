@@ -11,8 +11,10 @@ import {
   exportSummary,
   exportTranscript,
   exportReviewNotes,
+  exportTelemetryLog,
   type ExportDiffStats,
 } from "./exportUtils";
+import type { Observability } from "@workspace/api-client-react";
 
 export function OutputObservability({
   summary,
@@ -24,6 +26,7 @@ export function OutputObservability({
   changes,
   summaryStats,
   transcriptStats,
+  observability,
   onStartNew,
   onStepClick,
 }: {
@@ -36,6 +39,7 @@ export function OutputObservability({
   changes: string[];
   summaryStats: ExportDiffStats;
   transcriptStats: ExportDiffStats;
+  observability: Observability;
   onStartNew: () => void;
   onStepClick?: (step: number) => void;
 }) {
@@ -72,6 +76,13 @@ export function OutputObservability({
       label: "Review Notes (.md)",
       onClick: () => {
         exportReviewNotes(meetingTitle, feedback, changes, summaryStats, transcriptStats);
+        setExportOpen(false);
+      },
+    },
+    {
+      label: "Telemetry log (.json)",
+      onClick: () => {
+        exportTelemetryLog(observability, meetingTitle);
         setExportOpen(false);
       },
     },

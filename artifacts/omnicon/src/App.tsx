@@ -318,6 +318,7 @@ function App() {
           changes={derived!.changes}
           summaryStats={derived!.summaryStats}
           transcriptStats={derived!.transcriptStats}
+          observability={result!.observability}
           onStartNew={reset}
           onStepClick={onStepClick}
         />

@@ -1,3 +1,4 @@
+import type { Observability } from "@workspace/api-client-react";
 import type { SummarySection, TranscriptSegment } from "./mockData";
 
 export interface ExportDiffStats {
@@ -13,8 +14,12 @@ function toFilename(title: string, artifact: string): string {
   return `${slug}_${artifact}_v2.md`;
 }
 
-function downloadBlob(content: string, filename: string): void {
-  const blob = new Blob([content], { type: "text/markdown;charset=utf-8" });
+function downloadBlob(
+  content: string,
+  filename: string,
+  mimeType = "text/markdown;charset=utf-8",
+): void {
+  const blob = new Blob([content], { type: mimeType });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
@@ -93,4 +98,24 @@ export function exportReviewNotes(
     "",
   ];
   downloadBlob(lines.join("\n"), toFilename(title, "Review_Notes"));
+}
+
+export function exportTelemetryLog(
+  observability: Observability,
+  meetingTitle: string,
+): void {
+  const slug = meetingTitle
+    .trim()
+    .replace(/[^\w\s]/g, "")
+    .replace(/\s+/g, "_");
+  const envelope = {
+    meetingTitle,
+    exportedAt: new Date().toISOString(),
+    telemetry: observability,
+  };
+  downloadBlob(
+    JSON.stringify(envelope, null, 2),
+    `${slug}_telemetry.json`,
+    "application/json;charset=utf-8",
+  );
 }
