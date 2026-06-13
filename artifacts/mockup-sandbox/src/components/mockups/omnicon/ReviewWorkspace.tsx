@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { AppFrame, Panel, Badge, Button, Avatar, SectionLabel } from "./_shared/ui";
 import {
   TRANSCRIPT,
@@ -8,6 +9,7 @@ import {
 import { AlertTriangle, Quote, Sparkles, X } from "lucide-react";
 
 export function ReviewWorkspace() {
+  const [view, setView] = useState<"transcript" | "summary">("transcript");
   return (
     <AppFrame
       step={4}
@@ -35,10 +37,26 @@ export function ReviewWorkspace() {
           {/* Segmented toggle */}
           <div className="shrink-0 border-b border-[#1B212D] px-4 py-3">
             <div className="inline-flex rounded-lg border border-[#2E3749] bg-[#0A0D13] p-1">
-              <button className="rounded-md bg-[#5EEAD4] px-4 py-1.5 text-[12px] font-semibold text-[#06201C]">
+              <button
+                onClick={() => setView("transcript")}
+                className={
+                  "rounded-md px-4 py-1.5 text-[12px] transition-colors " +
+                  (view === "transcript"
+                    ? "bg-[#5EEAD4] font-semibold text-[#06201C]"
+                    : "font-medium text-[#9AA4B5] hover:text-[#E6E9EF]")
+                }
+              >
                 Transcript
               </button>
-              <button className="rounded-md px-4 py-1.5 text-[12px] font-medium text-[#9AA4B5] hover:text-[#E6E9EF]">
+              <button
+                onClick={() => setView("summary")}
+                className={
+                  "rounded-md px-4 py-1.5 text-[12px] transition-colors " +
+                  (view === "summary"
+                    ? "bg-[#5EEAD4] font-semibold text-[#06201C]"
+                    : "font-medium text-[#9AA4B5] hover:text-[#E6E9EF]")
+                }
+              >
                 Summary
               </button>
             </div>
@@ -46,7 +64,11 @@ export function ReviewWorkspace() {
 
           {/* Transcript list */}
           <div className="omni-scroll min-h-0 flex-1 overflow-y-auto px-4 py-3">
-            <div className="flex flex-col gap-3">
+            <div
+              className={
+                "flex flex-col gap-3 " + (view === "transcript" ? "" : "hidden")
+              }
+            >
               {TRANSCRIPT.map((seg) => (
                 <div
                   key={seg.id}
@@ -88,14 +110,24 @@ export function ReviewWorkspace() {
               ))}
             </div>
 
-            {/* Summary view markup (hidden / inactive) */}
-            <div className="hidden">
+            {/* Summary view (V1) */}
+            <div
+              className={
+                "flex flex-col gap-5 " + (view === "summary" ? "" : "hidden")
+              }
+            >
               {SUMMARY_V1.map((section) => (
                 <div key={section.heading}>
                   <SectionLabel>{section.heading}</SectionLabel>
-                  <ul>
+                  <ul className="mt-1.5 flex flex-col gap-1.5">
                     {section.bullets.map((b, i) => (
-                      <li key={i}>{b}</li>
+                      <li
+                        key={i}
+                        className="flex items-start gap-2.5 text-[13px] leading-relaxed text-[#9AA4B5]"
+                      >
+                        <span className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-[#5EEAD4]" />
+                        <span>{b}</span>
+                      </li>
                     ))}
                   </ul>
                 </div>

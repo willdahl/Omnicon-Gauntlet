@@ -1,6 +1,12 @@
+import { useState } from "react";
 import { Plus, Minus, ChevronDown, Eye, X, Check } from "lucide-react";
-import { AppFrame, Panel, Badge, Button } from "./_shared/ui";
-import { SUMMARY_DIFF, TRANSCRIPT_DIFF, DIFF_STATS } from "./_shared/mockData";
+import { AppFrame, Panel, Badge, Button, SectionLabel } from "./_shared/ui";
+import {
+  SUMMARY_DIFF,
+  TRANSCRIPT_DIFF,
+  DIFF_STATS,
+  SUMMARY_V1,
+} from "./_shared/mockData";
 import type { DiffLine } from "./_shared/mockData";
 
 function DiffRow({ line }: { line: DiffLine }) {
@@ -53,6 +59,8 @@ function DiffRow({ line }: { line: DiffLine }) {
 }
 
 export function DiffReview() {
+  const [mode, setMode] = useState<"diff" | "v1">("diff");
+  const [transcriptOpen, setTranscriptOpen] = useState(true);
   const transcriptChanges =
     TRANSCRIPT_DIFF.filter((l) => l.op !== "same" && !l.heading).length;
 
@@ -73,16 +81,36 @@ export function DiffReview() {
             <span className="omni-mono">{DIFF_STATS.unchanged}</span> unchanged
           </Badge>
           <div className="ml-1 flex items-center rounded-lg border border-[#2E3749] bg-[#12161F] p-0.5">
-            <span className="omni-mono rounded-md bg-[#1C2230] px-2.5 py-1 text-[11px] font-semibold text-[#E6E9EF]">
+            <button
+              onClick={() => setMode("diff")}
+              className={
+                "omni-mono rounded-md px-2.5 py-1 text-[11px] transition-colors " +
+                (mode === "diff"
+                  ? "bg-[#1C2230] font-semibold text-[#E6E9EF]"
+                  : "text-[#5E6675] hover:text-[#9AA4B5]")
+              }
+            >
               Diff
-            </span>
-            <span className="omni-mono px-2.5 py-1 text-[11px] text-[#5E6675]">
+            </button>
+            <button
+              onClick={() => setMode("v1")}
+              className={
+                "omni-mono rounded-md px-2.5 py-1 text-[11px] transition-colors " +
+                (mode === "v1"
+                  ? "bg-[#1C2230] font-semibold text-[#E6E9EF]"
+                  : "text-[#5E6675] hover:text-[#9AA4B5]")
+              }
+            >
               V1
-            </span>
+            </button>
           </div>
-          <Button variant="ghost" size="sm">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setMode((m) => (m === "diff" ? "v1" : "diff"))}
+          >
             <Eye className="h-3.5 w-3.5" />
-            View V1
+            {mode === "diff" ? "View V1" : "View diff"}
           </Button>
         </>
       }
@@ -105,49 +133,91 @@ export function DiffReview() {
       }
     >
       <div className="mx-auto flex max-w-4xl flex-col gap-4">
-        <Panel
-          title="Summary diff"
-          subtitle="Structured note — section by section"
-          right={
-            <Badge tone="outline">
-              <span className="omni-mono text-[10px]">V1 → V2</span>
-            </Badge>
-          }
-          bodyClassName="p-3"
-        >
-          <div className="flex flex-col gap-0.5">
-            {SUMMARY_DIFF.map((line, i) => (
-              <DiffRow key={i} line={line} />
-            ))}
-          </div>
-        </Panel>
+        {mode === "diff" ? (
+          <>
+            <Panel
+              title="Summary diff"
+              subtitle="Structured note — section by section"
+              right={
+                <Badge tone="outline">
+                  <span className="omni-mono text-[10px]">V1 → V2</span>
+                </Badge>
+              }
+              bodyClassName="p-3"
+            >
+              <div className="flex flex-col gap-0.5">
+                {SUMMARY_DIFF.map((line, i) => (
+                  <DiffRow key={i} line={line} />
+                ))}
+              </div>
+            </Panel>
 
-        <section className="overflow-hidden rounded-xl border border-[#232A38] bg-[#12161F]">
-          <button
-            type="button"
-            className="flex w-full items-center justify-between border-b border-[#1B212D] px-4 py-3 text-left transition-colors hover:bg-[#171C28]"
-          >
-            <div className="flex items-center gap-2.5">
-              <ChevronDown className="h-4 w-4 text-[#9AA4B5]" />
-              <span className="text-[13px] font-semibold text-[#E6E9EF]">
-                Transcript diff
-              </span>
-              <Badge tone="amber">
-                <span className="omni-mono">{transcriptChanges}</span> changes
+            <section className="overflow-hidden rounded-xl border border-[#232A38] bg-[#12161F]">
+              <button
+                type="button"
+                onClick={() => setTranscriptOpen((o) => !o)}
+                className="flex w-full items-center justify-between px-4 py-3 text-left transition-colors hover:bg-[#171C28]"
+              >
+                <div className="flex items-center gap-2.5">
+                  <ChevronDown
+                    className={
+                      "h-4 w-4 text-[#9AA4B5] transition-transform " +
+                      (transcriptOpen ? "" : "-rotate-90")
+                    }
+                  />
+                  <span className="text-[13px] font-semibold text-[#E6E9EF]">
+                    Transcript diff
+                  </span>
+                  <Badge tone="amber">
+                    <span className="omni-mono">{transcriptChanges}</span> changes
+                  </Badge>
+                </div>
+                <span className="omni-mono text-[10px] uppercase tracking-[0.16em] text-[#5E6675]">
+                  corrected attributions
+                </span>
+              </button>
+              {transcriptOpen && (
+                <div className="border-t border-[#1B212D] p-3">
+                  <div className="flex flex-col gap-0.5">
+                    {TRANSCRIPT_DIFF.map((line, i) => (
+                      <DiffRow key={i} line={line} />
+                    ))}
+                  </div>
+                </div>
+              )}
+            </section>
+          </>
+        ) : (
+          <Panel
+            title="Summary · V1"
+            subtitle="Original draft before corrections"
+            right={
+              <Badge tone="outline">
+                <span className="omni-mono text-[10px]">V1</span>
               </Badge>
-            </div>
-            <span className="omni-mono text-[10px] uppercase tracking-[0.16em] text-[#5E6675]">
-              corrected attributions
-            </span>
-          </button>
-          <div className="p-3">
-            <div className="flex flex-col gap-0.5">
-              {TRANSCRIPT_DIFF.map((line, i) => (
-                <DiffRow key={i} line={line} />
+            }
+            bodyClassName="p-4"
+          >
+            <div className="flex flex-col gap-5">
+              {SUMMARY_V1.map((section) => (
+                <div key={section.heading}>
+                  <SectionLabel>{section.heading}</SectionLabel>
+                  <ul className="mt-1.5 flex flex-col gap-1.5">
+                    {section.bullets.map((b, i) => (
+                      <li
+                        key={i}
+                        className="flex items-start gap-2.5 text-[13px] leading-relaxed text-[#9AA4B5]"
+                      >
+                        <span className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-[#5E6675]" />
+                        <span>{b}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               ))}
             </div>
-          </div>
-        </section>
+          </Panel>
+        )}
       </div>
     </AppFrame>
   );
