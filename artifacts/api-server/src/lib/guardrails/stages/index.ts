@@ -1,5 +1,6 @@
 import type { PreGuardrailStage, PostGuardrailStage } from "../types";
 import { languageGuard } from "./language";
+import { scopedDiffGuard } from "./scoped-diff";
 
 /**
  * Central guardrail stage registry.
@@ -9,4 +10,4 @@ import { languageGuard } from "./language";
  */
 export const preStages: PreGuardrailStage[] = [languageGuard];
 
-export const postStages: PostGuardrailStage[] = [];
+export const postStages: PostGuardrailStage[] = [scopedDiffGuard];
