@@ -1,0 +1,31 @@
+kind = "slides"
+previewPath = "/omnicon-deck/"
+title = "OMNICON Overview"
+version = "1.0.0"
+id = "artifacts/omnicon-deck"
+router = "path"
+
+[[integratedSkills]]
+name = "slides"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/omnicon-deck/" ]
+localPort = 25427
+
+[services.development]
+run = "pnpm --filter @workspace/omnicon-deck run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/omnicon-deck", "run", "build" ]
+publicDir = "artifacts/omnicon-deck/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "25427"
+BASE_PATH = "/omnicon-deck/"

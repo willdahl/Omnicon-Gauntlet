@@ -1,0 +1,74 @@
+[
+  {
+    "id": "97c34139-0b3a-4699-9840-89a8af6cc6a0",
+    "position": 1,
+    "filepath": "src/pages/slides/01-Title.tsx",
+    "title": "OMNICON",
+    "description": "Title slide introducing OMNICON as a review harness for AI-generated meeting notes.",
+    "speakerNotes": ""
+  },
+  {
+    "id": "7b2e7485-4f2e-4aa8-94b3-76ddad2b0c83",
+    "position": 2,
+    "filepath": "src/pages/slides/02-Problem.tsx",
+    "title": "The problem",
+    "description": "Why AI summaries can't be trusted: drift, wholesale rewrites, and no safe way to verify changes.",
+    "speakerNotes": ""
+  },
+  {
+    "id": "a2acd5d8-076b-434d-a3df-efdb14ca2992",
+    "position": 3,
+    "filepath": "src/pages/slides/03-WhatItDoes.tsx",
+    "title": "What OMNICON does",
+    "description": "The human-in-the-loop loop from draft to approved summary, shown as a five-step flow.",
+    "speakerNotes": ""
+  },
+  {
+    "id": "c083024f-167d-4ac0-804f-03aec1f13458",
+    "position": 4,
+    "filepath": "src/pages/slides/04-Workflow.tsx",
+    "title": "The review workflow",
+    "description": "Six guided stages from source selection to approval and telemetry.",
+    "speakerNotes": ""
+  },
+  {
+    "id": "28a1e4e4-54cc-4a51-a5ec-f148a4d3baf5",
+    "position": 5,
+    "filepath": "src/pages/slides/05-Engine.tsx",
+    "title": "Inside the regeneration engine",
+    "description": "A live OpenRouter call that returns a scoped V2 via delimited markers.",
+    "speakerNotes": ""
+  },
+  {
+    "id": "634f1ac5-6417-4f2f-aee3-4606f0be9f71",
+    "position": 6,
+    "filepath": "src/pages/slides/06-Diffs.tsx",
+    "title": "Diffs you can verify",
+    "description": "Side-by-side V1 vs V2 diffs with a what-changed justification panel.",
+    "speakerNotes": ""
+  },
+  {
+    "id": "bd386567-f463-4ba9-9543-bd624b9cade9",
+    "position": 7,
+    "filepath": "src/pages/slides/07-Guardrails.tsx",
+    "title": "Five guardrails",
+    "description": "G1-G5 guardrails enforced on every regeneration, shipped as a runnable demo suite.",
+    "speakerNotes": ""
+  },
+  {
+    "id": "ec26c02b-3e9a-482c-a776-2c79cdddddae",
+    "position": 8,
+    "filepath": "src/pages/slides/08-Observability.tsx",
+    "title": "Observability",
+    "description": "Latency, cost, tokens, finish reason, model reasoning, and one-click export.",
+    "speakerNotes": ""
+  },
+  {
+    "id": "4b1ad854-6654-46f2-9bfd-4ec2a1f854d6",
+    "position": 9,
+    "filepath": "src/pages/slides/09-Closing.tsx",
+    "title": "By design",
+    "description": "Closing: trustworthy revision by design — humans in the loop, scoped, visible, measured.",
+    "speakerNotes": ""
+  }
+]

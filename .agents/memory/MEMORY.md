@@ -2,3 +2,4 @@
 - [OMNICON regen wiring](omnicon-regen-wiring.md) — engine owns seed/diff/observability; omnicon holds no static content, only adapts shapes in adapters.ts.
 - [LLM long verbatim text output format](llm-long-text-output-format.md) — for long multi-line LLM output use sentinel delimiters, not JSON; models emit invalid JSON (literal newlines) in long strings.
 - [Guardrail test suite sync](guardrail-suite-sync.md) — executable suite (test-fixtures.ts), frontend display copy (guardrail-meta.ts), and spec doc must stay aligned; guardrails not built yet so flag cases fail by design.
+- [Slides root-class contract](slides-contract-root-classes.md) — "exact" means the 4 classes must be present, not exclusive; extra root utilities are fine (recurring code-review false positive).
