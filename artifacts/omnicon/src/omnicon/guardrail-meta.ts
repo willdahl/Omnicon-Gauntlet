@@ -3,7 +3,9 @@ export type FlagReason =
   | "unlocatable"
   | "ungrounded"
   | "out_of_scope"
-  | "unsupported_language";
+  | "unsupported_language"
+  | "injection"
+  | "low_confidence";
 
 /** Mirrors EditedSpan in test-fixtures.ts. */
 export interface EditedSpan {
